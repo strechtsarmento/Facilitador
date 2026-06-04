@@ -3,84 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Facilitador</title>
+  <title>Facilitador de Evolução</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <header class="topbar">
-    <h1>Facilitador</h1>
-    <p>Escolha o que você vai “facilitar” hoje</p>
-  </header>
+  <!-- TELA INICIAL / DASHBOARD -->
+  <main id="dashboard" class="container">
+    
+    <header class="topbar">
+      <h1>Evolução</h1>
+      <p>Acompanhe sua jornada diariamente</p>
+    </header>
 
-  <main class="container">
+    <!-- Quadrado Maior de Destaque com Gráfico Circular -->
+    <section class="card-destaque-jornada">
+      <div class="info-jornada">
+        <h2>Sua Jornada</h2>
+        <p class="meta-frase">Alvo: <strong>90,0 kg</strong></p>
+        <div class="pesos-progresso">
+          <div><span>Inicial</span><strong>162,5 kg</strong></div>
+          <div class="seta">→</div>
+          <div><span>Atual</span><strong class="peso-atual">131,0 kg</strong></div>
+        </div>
+        <div class="mini-indicadores">
+          <p>🔥 <strong>31,5 kg eliminados!</strong> (31L de gordura a menos)</p>
+          <p>🎯 Faltam 41,0 kg para a meta final.</p>
+        </div>
+      </div>
 
-  <section class="painel-destaque">
-  <div class="progresso-topo">
-    <h2>Jornada de Evolução</h2>
-    <span class="badge-fase">Fase 1: Rumo aos 120kg</span>
-  </div>
-  
-  <div class="medidas-principais">
-    <div class="dado-peso">
-      <span class="label">Inicial</span>
-      <strong>162,5 kg</strong>
-    </div>
-    <div class="seta-evolucao">➡️</div>
-    <div class="dado-peso atual">
-      <span class="label">Atual</span>
-      <strong>131,0 kg</strong>
-    </div>
-    <div class="seta-evolucao">➡️</div>
-    <div class="dado-peso meta">
-      <span class="label">Meta Final</span>
-      <strong>90,0 kg</strong>
-    </div>
-  </div>
+      <!-- Gráfico em Círculo (CSS Puro com Conic-Gradient) -->
+      <div class="grafico-circular-container">
+        <div class="circulo-progresso" style="--porcentagem: 43.4%;">
+          <div class="circulo-centro">
+            <span class="num-porcentagem">43.4%</span>
+            <span class="sub-porcentagem">concluído</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Barra de Progresso Visual -->
-  <div class="barra-progresso-container">
-    <div class="barra-preenchimento" style="width: 43.4%;">43.4% Concluído</div>
-  </div>
-
-  <div class="mini-indicadores">
-    <p>🔥 <strong>31,5 kg eliminados!</strong> Isso equivale a cerca de 126 pacotes de arroz ou 31L de gordura corporal.</p>
-    <p>🎯 Falta muito menos do que antes: <strong>41,0 kg restantes</strong>.</p>
-  </div>
-</section>
+    <!-- Grid de Botões/Cards modificada para abrir novas telas -->
     <section class="grid">
-
       <button class="card large" data-tela="antesDepois">
         <strong>📸 Antes e Depois</strong>
-        <p>Compare imagens com precisão cirúrgica (ou quase isso).</p>
+        <p>Compare suas fotos com o slider.</p>
       </button>
 
-      <button class="card" data-tela="galeria">
-        <strong>🖼️ Galeria</strong>
-        <p>Suas imagens salvas</p>
+      <button class="card" data-tela="alimentacao">
+        <strong>🍽️ Alimentação</strong>
+        <p>Controle de macros e calorias.</p>
       </button>
 
-      <button class="card small" data-tela="upload">
-        <strong>⬆️ Upload</strong>
+      <button class="card" data-tela="treinos">
+        <strong>💪 Treinos</strong>
+        <p>Checklist de musculação e cardio.</p>
       </button>
 
-      <button class="card tall" data-tela="config">
-        <strong>⚙️ Config</strong>
-        <p>Ajustes do sistema</p>
+      <button class="card" data-tela="medidas">
+        <strong>📈 Gráficos & Medidas</strong>
+        <p>Evolução de peso e perímetros.</p>
       </button>
-
-      <button class="card" data-tela="historico">
-        <strong>🕓 Histórico</strong>
-        <p>Suas ações recentes</p>
-      </button>
-
     </section>
-
-    <section id="view" class="view" aria-live="polite">
-      <p>Selecione um card acima 👆</p>
-    </section>
-
   </main>
+
+  <!-- CONTAINER DE TELAS INTERNAS (Fica oculto inicialmente) -->
+  <div id="tela-interna" class="tela-interna-container hidden">
+    <div class="header-interna">
+      <button id="btn-voltar" class="btn-voltar">← Voltar pro Início</button>
+      <h2 id="titulo-interna">Título da Tela</h2>
+    </div>
+    <div id="conteudo-interna" class="conteudo-interna">
+      <!-- O HTML dinâmico entra aqui -->
+    </div>
+  </div>
 
   <script src="js/script.js"></script>
 </body>

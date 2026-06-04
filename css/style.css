@@ -5,296 +5,156 @@ body {
   color: #e5e7eb;
 }
 
-/* topo */
-.topbar {
-  text-align: center;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* container */
 .container {
-  max-width: 1000px;
+  max-width: 800px;
   margin: auto;
   padding: 20px;
 }
 
-/* GRID - Responsivo (1 coluna no mobile, 3 no desktop) */
-.grid {
+.topbar {
+  text-align: center;
+  padding: 15px 0 25px 0;
+}
+.topbar h1 { margin: 0; font-size: 2rem; }
+.topbar p { margin: 5px 0 0 0; opacity: 0.6; }
+
+/* === CARD DESTAQUE QUADRADO MAIOR === */
+.card-destaque-jornada {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 25px;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 15px;
-}
-
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 120px;
-  }
-}
-
-/* card base (ajustado para elemento button) */
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
-  
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 15px;
-  cursor: pointer;
-  transition: transform 0.25s, background-color 0.25s, box-shadow 0.25s;
-  overflow: hidden;
-}
-
-.card strong {
-  font-size: 1.1rem;
-  margin-bottom: 5px;
-}
-
-.card p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-/* Estados de Hover e Foco (Teclado) */
-.card:hover, .card:focus-visible {
-  transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.08);
-  outline: 2px solid #3b82f6; /* Destaque azul ao usar o Tab */
-  outline-offset: 2px;
-}
-
-/* tamanhos diferentes (aplicados apenas no desktop) */
-@media (min-width: 768px) {
-  .large {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-
-  .tall {
-    grid-row: span 2;
-  }
-
-  .small {
-    grid-row: span 1;
-    opacity: 0.85;
-  }
-}
-
-/* view */
-.view {
-  margin-top: 20px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-}
-
-/* Adicione ao seu style.css para criar o painel de destaque */
-.painel-destaque {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 25px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-}
-
-.progresso-topo {
-  display: flex;
-  justify-content: space-between;
+  gap: 25px;
   align-items: center;
-  margin-bottom: 15px;
 }
 
-.progresso-topo h2 {
-  margin: 0;
-  font-size: 1.3rem;
-  color: #f3f4f6;
+@media (min-width: 600px) {
+  .card-destaque-jornada {
+    grid-template-columns: 1fr 200px; /* Alinha info na esquerda, círculo na direita */
+  }
 }
 
-.badge-fase {
-  background: #2563eb;
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: bold;
-}
+.info-jornada h2 { margin: 0 0 5px 0; font-size: 1.6rem; color: #fff; }
+.meta-frase { margin: 0 0 20px 0; opacity: 0.7; }
 
-.medidas-principais {
+.pesos-progresso {
   display: flex;
-  justify-content: space-around;
+  gap: 20px;
   align-items: center;
   background: rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  border-radius: 12px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  width: max-content;
   margin-bottom: 15px;
 }
+.pesos-progresso span { display: block; font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; }
+.pesos-progresso strong { font-size: 1.25rem; }
+.pesos-progresso .peso-atual { color: #10b981; }
+.pesos-progresso .seta { opacity: 0.4; font-weight: bold; }
 
-.dado-peso {
-  text-align: center;
+.mini-indicadores p { margin: 6px 0; font-size: 0.9rem; opacity: 0.85; }
+
+/* GRÁFICO EM CÍRCULO (CSS TRICK) */
+.grafico-circular-container {
+  display: flex;
+  justify-content: center;
 }
 
-.dado-peso .label {
-  display: block;
-  font-size: 0.8rem;
-  opacity: 0.6;
-  text-transform: uppercase;
-}
-
-.dado-peso strong {
-  font-size: 1.4rem;
-  color: #f3f4f6;
-}
-
-.dado-peso.atual strong {
-  color: #10b981; /* Verde para destacar o peso atual */
-}
-
-.barra-progresso-container {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
-  overflow: hidden;
-  margin-bottom: 15px;
-}
-
-.barra-preenchimento {
-  background: linear-gradient(90deg, #3b82f6, #10b981);
-  color: white;
-  text-align: right;
-  padding: 6px 15px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  border-radius: 50px;
-  transition: width 0.5s ease-in-out;
-}
-
-.mini-indicators p {
-  margin: 5px 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-/* --- MÓDULO ANTES E DEPOIS --- */
-.antes-depois-container {
-  text-align: center;
-}
-
-.slider-wrapper {
+.circulo-progresso {
   position: relative;
-  width: 100%;
-  max-width: 500px;
-  height: 500px;
-  margin: 20px auto;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  user-select: none;
-}
-
-/* Imagens devem ocupar o mesmo espaço perfeitamente */
-.slider-wrapper img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 500px; /* Força a imagem a manter a proporção do box */
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-
-/* Container da imagem da frente (Antes) que será recortada */
-.img-antes-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 500px;
-  height: 100%;
-  overflow: hidden;
-  width: 50%; /* Começa na metade */
-  border-right: 2px solid #3b82f6;
-  z-index: 2;
-}
-
-.img-depois {
-  z-index: 1;
-}
-
-/* Barra invisível do input range cobrindo a imagem para capturar o arrasto */
-.slider-barra {
-  position: absolute;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  top: 0;
-  left: 0;
-  margin: 0;
-  z-index: 3;
-  cursor: ew-resize;
-}
-
-/* Estilização da bolinha do slider (Thumb) */
-.slider-barra::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 40px;
-  height: 40px;
-  background: #3b82f6;
-  border: 3px solid #ffffff;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  cursor: ew-resize;
+  /* Usa a variável --porcentagem definida no HTML para preencher o ângulo */
+  background: conic-gradient(#2563eb 0% var(--porcentagem), rgba(255,255,255,0.08) var(--porcentagem) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-.slider-barra::-moz-range-thumb {
-  width: 40px;
-  height: 40px;
-  background: #3b82f6;
-  border: 3px solid #ffffff;
+.circulo-centro {
+  width: 130px;
+  height: 130px;
+  background: #0b1220; /* Mesma cor do fundo do app para furar o círculo */
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  cursor: ew-resize;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Etiquetas de Texto por cima da foto */
-.label-foto {
-  position: absolute;
-  bottom: 15px;
-  background: rgba(0, 0, 0, 0.7);
+.num-porcentagem { font-size: 1.6rem; font-weight: bold; color: #fff; }
+.sub-porcentagem { font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; }
+
+/* === GRID DE BOTÕES === */
+.grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+@media (min-width: 600px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.15); }
+.card strong { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+.card p { margin: 0; font-size: 0.85rem; opacity: 0.6; }
+
+/* === GERENCIADOR DE TELAS (EXIBIÇÃO INTEGRAL) === */
+.hidden { display: none !important; }
+
+.tela-interna-container {
+  min-height: 100vh;
+  background: #0b1220;
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+.header-interna {
+  max-width: 800px;
+  margin: 0 auto 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 15px;
+}
+
+.header-interna h2 { margin: 0; font-size: 1.5rem; }
+
+.btn-voltar {
+  background: rgba(255,255,255,0.08);
+  border: none;
   color: #fff;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  pointer-events: none;
-  z-index: 4;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.btn-voltar:hover { background: rgba(255,255,255,0.15); }
+
+.conteudo-interna {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.label-foto.antes {
-  left: 15px;
-}
-
-.label-foto.depois {
-  right: 15px;
-}
-
-/* Responsividade para o container do Slider */
-@media (max-width: 550px) {
-  .slider-wrapper {
-    height: 350px;
-  }
-  .slider-wrapper img {
-    width: 100vw;
-  }
-}
+/* Re-reaproveitando o estilo do slider de fotos que fizemos antes */
+.slider-wrapper { position: relative; width: 100%; max-width: 500px; height: 450px; margin: 20px auto; border-radius: 16px; overflow: hidden; }
+.slider-wrapper img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; pointer-events: none; }
+.img-antes-container { position: absolute; top:0; left:0; height:100%; overflow:hidden; width: 50%; border-right: 3px solid #2563eb; z-index:2; }
+.slider-barra { position: absolute; -webkit-appearance:none; appearance:none; width:100%; height:100%; background:transparent; top:0; left:0; z-index:3; cursor:ew-resize; }
+.slider-barra::-webkit-slider-thumb { -webkit-appearance:none; width:35px; height:35px; background:#2563eb; border:3px solid #fff; border-radius:50%; }
+.label-foto { position: absolute; bottom: 15px; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; z-index:4; }
+.label-foto.antes { left: 15px; } .label-foto.depois { right: 15px; }
