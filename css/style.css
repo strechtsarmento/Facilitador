@@ -97,3 +97,89 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
 }
+
+/* Adicione ao seu style.css para criar o painel de destaque */
+.painel-destaque {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.progresso-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.progresso-topo h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #f3f4f6;
+}
+
+.badge-fase {
+  background: #2563eb;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.medidas-principais {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.dado-peso {
+  text-align: center;
+}
+
+.dado-peso .label {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.dado-peso strong {
+  font-size: 1.4rem;
+  color: #f3f4f6;
+}
+
+.dado-peso.atual strong {
+  color: #10b981; /* Verde para destacar o peso atual */
+}
+
+.barra-progresso-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.barra-preenchimento {
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  color: white;
+  text-align: right;
+  padding: 6px 15px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border-radius: 50px;
+  transition: width 0.5s ease-in-out;
+}
+
+.mini-indicators p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
