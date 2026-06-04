@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+/* topo */
+.topbar {
+  text-align: center;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* container */
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* GRID - Responsivo (1 coluna no mobile, 3 no desktop) */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 120px;
+  }
+}
+
+/* card base (ajustado para elemento button) */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 15px;
+  cursor: pointer;
+  transition: transform 0.25s, background-color 0.25s, box-shadow 0.25s;
+  overflow: hidden;
+}
+
+.card strong {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Estados de Hover e Foco (Teclado) */
+.card:hover, .card:focus-visible {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.08);
+  outline: 2px solid #3b82f6; /* Destaque azul ao usar o Tab */
+  outline-offset: 2px;
+}
+
+/* tamanhos diferentes (aplicados apenas no desktop) */
+@media (min-width: 768px) {
+  .large {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .tall {
+    grid-row: span 2;
+  }
+
+  .small {
+    grid-row: span 1;
+    opacity: 0.85;
+  }
+}
+
+/* view */
+.view {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}

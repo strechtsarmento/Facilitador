@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Facilitador</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>Facilitador</h1>
+    <p>Escolha o que você vai “facilitar” hoje</p>
+  </header>
+
+  <main class="container">
+
+    <!-- Mudamos para <nav> ou mantemos <section>, mas usando botões nativos -->
+    <section class="grid">
+
+      <button class="card large" data-tela="antesDepois">
+        <strong>📸 Antes e Depois</strong>
+        <p>Compare imagens com precisão cirúrgica (ou quase isso).</p>
+      </button>
+
+      <button class="card" data-tela="galeria">
+        <strong>🖼️ Galeria</strong>
+        <p>Suas imagens salvas</p>
+      </button>
+
+      <button class="card small" data-tela="upload">
+        <strong>⬆️ Upload</strong>
+      </button>
+
+      <button class="card tall" data-tela="config">
+        <strong>⚙️ Config</strong>
+        <p>Ajustes do sistema</p>
+      </button>
+
+      <button class="card" data-tela="historico">
+        <strong>🕓 Histórico</strong>
+        <p>Suas ações recentes</p>
+      </button>
+
+    </section>
+
+    <section id="view" class="view" aria-live="polite">
+      <p>Selecione um card acima 👆</p>
+    </section>
+
+  </main>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
