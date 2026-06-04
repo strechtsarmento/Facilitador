@@ -33,7 +33,7 @@ body {
 
 @media (min-width: 600px) {
   .card-destaque-jornada {
-    grid-template-columns: 1fr 200px; /* Alinha info na esquerda, círculo na direita */
+    grid-template-columns: 1fr 200px;
   }
 }
 
@@ -57,7 +57,7 @@ body {
 
 .mini-indicadores p { margin: 6px 0; font-size: 0.9rem; opacity: 0.85; }
 
-/* GRÁFICO EM CÍRCULO (CSS TRICK) */
+/* GRÁFICO EM CÍRCULO (CONIC GRADIENT) */
 .grafico-circular-container {
   display: flex;
   justify-content: center;
@@ -68,8 +68,7 @@ body {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  /* Usa a variável --porcentagem definida no HTML para preencher o ângulo */
-  background: conic-gradient(#2563eb 0% var(--porcentagem), rgba(255,255,255,0.08) var(--porcentagem) 100%);
+  background: conic-gradient(#2563eb 0% var(--porcentagem), rgba(255, 255, 255, 0.08) var(--porcentagem) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,7 +78,7 @@ body {
 .circulo-centro {
   width: 130px;
   height: 130px;
-  background: #0b1220; /* Mesma cor do fundo do app para furar o círculo */
+  background: #0b1220;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -90,7 +89,7 @@ body {
 .num-porcentagem { font-size: 1.6rem; font-weight: bold; color: #fff; }
 .sub-porcentagem { font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; }
 
-/* === GRID DE BOTÕES === */
+/* === GRID DE BOTÕES (CARDS) === */
 .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 @media (min-width: 600px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
@@ -105,13 +104,18 @@ body {
   color: inherit;
   font-family: inherit;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
 }
-.card:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.08); border-color: rgba(255,255,255,0.15); }
+.card:hover, .card:focus-visible { 
+  transform: translateY(-4px); 
+  background: rgba(255, 255, 255, 0.08); 
+  border-color: rgba(255,255,255,0.15);
+  outline: none;
+}
 .card strong { font-size: 1.1rem; display: block; margin-bottom: 4px; }
 .card p { margin: 0; font-size: 0.85rem; opacity: 0.6; }
 
-/* === GERENCIADOR DE TELAS (EXIBIÇÃO INTEGRAL) === */
+/* === CONFIGURAÇÃO DE TELAS INTERNAS === */
 .hidden { display: none !important; }
 
 .tela-interna-container {
@@ -130,7 +134,6 @@ body {
   border-bottom: 1px solid rgba(255,255,255,0.08);
   padding-bottom: 15px;
 }
-
 .header-interna h2 { margin: 0; font-size: 1.5rem; }
 
 .btn-voltar {
@@ -141,7 +144,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
-  transition: 0.2s;
+  transition: background 0.2s;
 }
 .btn-voltar:hover { background: rgba(255,255,255,0.15); }
 
@@ -150,11 +153,102 @@ body {
   margin: 0 auto;
 }
 
-/* Re-reaproveitando o estilo do slider de fotos que fizemos antes */
-.slider-wrapper { position: relative; width: 100%; max-width: 500px; height: 450px; margin: 20px auto; border-radius: 16px; overflow: hidden; }
-.slider-wrapper img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; pointer-events: none; }
-.img-antes-container { position: absolute; top:0; left:0; height:100%; overflow:hidden; width: 50%; border-right: 3px solid #2563eb; z-index:2; }
-.slider-barra { position: absolute; -webkit-appearance:none; appearance:none; width:100%; height:100%; background:transparent; top:0; left:0; z-index:3; cursor:ew-resize; }
-.slider-barra::-webkit-slider-thumb { -webkit-appearance:none; width:35px; height:35px; background:#2563eb; border:3px solid #fff; border-radius:50%; }
-.label-foto { position: absolute; bottom: 15px; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; z-index:4; }
-.label-foto.antes { left: 15px; } .label-foto.depois { right: 15px; }
+/* === MÓDULO CÂMERA E OVERLAY DE SOBREPOSIÇÃO === */
+.controles-alinhamento {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 20px;
+}
+@media (min-width: 600px) {
+  .controles-alinhamento { flex-direction: row; }
+}
+
+.campo-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.campo-upload label { font-size: 0.85rem; color: #9ca3af; font-weight: 600; }
+.campo-upload input[type="file"] {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  padding: 8px;
+  border-radius: 8px;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+.campo-upload input[type="range"] {
+  width: 100%;
+  height: 38px;
+  cursor: pointer;
+}
+
+.camera-box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 3 / 4;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.camera-box video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#img-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.botoes-camera {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+.btn-acao {
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.1s, filter 0.2s;
+}
+.btn-acao:active { transform: scale(0.97); }
+.btn-acao.azul { background: #2563eb; }
+.btn-acao.verde { background: #10b981; }
+.btn-acao:hover { filter: brightness(1.1); }
+
+.btn-limpar {
+  display: block;
+  margin: 20px auto 0 auto;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: 0.2s;
+}
+.btn-limpar:hover { background: rgba(239, 68, 68, 0.1); }

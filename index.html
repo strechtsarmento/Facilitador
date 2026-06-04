@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- TELA INICIAL / DASHBOARD -->
   <main id="dashboard" class="container">
     
     <header class="topbar">
@@ -16,7 +15,6 @@
       <p>Acompanhe sua jornada diariamente</p>
     </header>
 
-    <!-- Quadrado Maior de Destaque com Gráfico Circular -->
     <section class="card-destaque-jornada">
       <div class="info-jornada">
         <h2>Sua Jornada</h2>
@@ -32,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Gráfico em Círculo (CSS Puro com Conic-Gradient) -->
       <div class="grafico-circular-container">
         <div class="circulo-progresso" style="--porcentagem: 43.4%;">
           <div class="circulo-centro">
@@ -43,11 +40,10 @@
       </div>
     </section>
 
-    <!-- Grid de Botões/Cards modificada para abrir novas telas -->
     <section class="grid">
       <button class="card large" data-tela="antesDepois">
         <strong>📸 Antes e Depois</strong>
-        <p>Compare suas fotos com o slider.</p>
+        <p>Alinhamento preciso com overlay e câmera.</p>
       </button>
 
       <button class="card" data-tela="alimentacao">
@@ -67,15 +63,13 @@
     </section>
   </main>
 
-  <!-- CONTAINER DE TELAS INTERNAS (Fica oculto inicialmente) -->
   <div id="tela-interna" class="tela-interna-container hidden">
     <div class="header-interna">
-      <button id="btn-voltar" class="btn-voltar">← Voltar pro Início</button>
+      <button id="btn-voltar" class="btn-voltar">← Voltar</button>
       <h2 id="titulo-interna">Título da Tela</h2>
     </div>
     <div id="conteudo-interna" class="conteudo-interna">
-      <!-- O HTML dinâmico entra aqui -->
-    </div>
+      </div>
   </div>
 
   <script src="js/script.js"></script>
