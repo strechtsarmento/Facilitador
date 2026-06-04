@@ -1,254 +1,284 @@
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui;
   background: #0b1220;
   color: #e5e7eb;
 }
 
+/* topo */
+.topbar {
+  text-align: center;
+  padding: 25px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* container */
 .container {
-  max-width: 800px;
+  max-width: 1000px;
   margin: auto;
   padding: 20px;
 }
 
-.topbar {
-  text-align: center;
-  padding: 15px 0 25px 0;
-}
-.topbar h1 { margin: 0; font-size: 2rem; }
-.topbar p { margin: 5px 0 0 0; opacity: 0.6; }
-
-/* === CARD DESTAQUE QUADRADO MAIOR === */
-.card-destaque-jornada {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 30px;
-  margin-bottom: 25px;
+/* GRID estilo “masonry fake” */
+.grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 25px;
-  align-items: center;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 120px;
+  gap: 15px;
 }
 
-@media (min-width: 600px) {
-  .card-destaque-jornada {
-    grid-template-columns: 1fr 200px;
-  }
+/* card base */
+.card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 15px;
+  cursor: pointer;
+  transition: 0.25s;
+  overflow: hidden;
 }
 
-.info-jornada h2 { margin: 0 0 5px 0; font-size: 1.6rem; color: #fff; }
-.meta-frase { margin: 0 0 20px 0; opacity: 0.7; }
+.card:hover {
+  transform: translateY(-6px);
+  background: rgba(255,255,255,0.08);
+}
 
-.pesos-progresso {
+/* tamanhos diferentes */
+.large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.tall {
+  grid-row: span 2;
+}
+
+.small {
+  grid-row: span 1;
+  opacity: 0.85;
+}
+
+/* view */
+.view {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+}
+
+/* === INTERFACE DA MESA DE ALINHAMENTO === */
+.modulo-alinhamento {
   display: flex;
-  gap: 20px;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 12px 20px;
-  border-radius: 14px;
-  width: max-content;
+  flex-direction: column;
+}
+
+.controles-arquivos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
   margin-bottom: 15px;
 }
-.pesos-progresso span { display: block; font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; }
-.pesos-progresso strong { font-size: 1.25rem; }
-.pesos-progresso .peso-atual { color: #10b981; }
-.pesos-progresso .seta { opacity: 0.4; font-weight: bold; }
 
-.mini-indicadores p { margin: 6px 0; font-size: 0.9rem; opacity: 0.85; }
-
-/* GRÁFICO EM CÍRCULO (CONIC GRADIENT) */
-.grafico-circular-container {
-  display: flex;
-  justify-content: center;
+@media (max-width: 600px) {
+  .controles-arquivos { grid-template-columns: 1fr; }
 }
 
-.circulo-progresso {
-  position: relative;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: conic-gradient(#2563eb 0% var(--porcentagem), rgba(255, 255, 255, 0.08) var(--porcentagem) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-
-.circulo-centro {
-  width: 130px;
-  height: 130px;
-  background: #0b1220;
-  border-radius: 50%;
+.campo-foto {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 5px;
 }
 
-.num-porcentagem { font-size: 1.6rem; font-weight: bold; color: #fff; }
-.sub-porcentagem { font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; }
-
-/* === GRID DE BOTÕES (CARDS) === */
-.grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-@media (min-width: 600px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
+.campo-foto label {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-weight: 600;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: left;
-  color: inherit;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
-}
-.card:hover, .card:focus-visible { 
-  transform: translateY(-4px); 
-  background: rgba(255, 255, 255, 0.08); 
-  border-color: rgba(255,255,255,0.15);
-  outline: none;
-}
-.card strong { font-size: 1.1rem; display: block; margin-bottom: 4px; }
-.card p { margin: 0; font-size: 0.85rem; opacity: 0.6; }
-
-/* === CONFIGURAÇÃO DE TELAS INTERNAS === */
-.hidden { display: none !important; }
-
-.tela-interna-container {
-  min-height: 100vh;
-  background: #0b1220;
-  padding: 30px 20px;
-  box-sizing: border-box;
-}
-
-.header-interna {
-  max-width: 800px;
-  margin: 0 auto 30px auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding-bottom: 15px;
-}
-.header-interna h2 { margin: 0; font-size: 1.5rem; }
-
-.btn-voltar {
-  background: rgba(255,255,255,0.08);
-  border: none;
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-.btn-voltar:hover { background: rgba(255,255,255,0.15); }
-
-.conteudo-interna {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* === MÓDULO CÂMERA E OVERLAY DE SOBREPOSIÇÃO === */
-.controles-alinhamento {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 20px;
-}
-@media (min-width: 600px) {
-  .controles-alinhamento { flex-direction: row; }
-}
-
-.campo-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-.campo-upload label { font-size: 0.85rem; color: #9ca3af; font-weight: 600; }
-.campo-upload input[type="file"] {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+.campo-foto input[type="file"] {
+  background: rgba(0,0,0,0.2);
+  border: 1px dashed rgba(255,255,255,0.15);
   padding: 8px;
   border-radius: 8px;
-  color: #e5e7eb;
-  cursor: pointer;
-}
-.campo-upload input[type="range"] {
-  width: 100%;
-  height: 38px;
+  color: #fff;
   cursor: pointer;
 }
 
-.camera-box {
+.controles-edicao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  background: rgba(255,255,255,0.02);
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.grupo-botoes button {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.grupo-botoes button:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.grupo-slider-opacidade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* CAIXA CONTAINER VERTICAL RETRATO (Proporção 3:4) */
+.canvas-alinhamento {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 380px;
   aspect-ratio: 3 / 4;
-  margin: 0 auto;
+  margin: 10px auto;
+  background: #050a14;
   border-radius: 16px;
   overflow: hidden;
-  background: #000;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255,255,255,0.1);
+  cursor: move;
 }
-.camera-box video {
+
+.img-base-alinhamento {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
 }
 
-#img-overlay {
+.camada-movivel {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  opacity: 0.5;
+  transform-origin: center center;
   pointer-events: none;
-  z-index: 2;
 }
 
-.botoes-camera {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
+.camada-movivel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.btn-acao {
-  border: none;
+
+.btn-principal {
+  background: #10b981;
   color: white;
-  padding: 12px 24px;
+  border: none;
+  padding: 14px;
   border-radius: 10px;
   font-weight: bold;
-  cursor: pointer;
   font-size: 1rem;
-  transition: transform 0.1s, filter 0.2s;
-}
-.btn-acao:active { transform: scale(0.97); }
-.btn-acao.azul { background: #2563eb; }
-.btn-acao.verde { background: #10b981; }
-.btn-acao:hover { filter: brightness(1.1); }
-
-.btn-limpar {
-  display: block;
-  margin: 20px auto 0 auto;
-  background: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #ef4444;
-  padding: 8px 16px;
-  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: 0.2s;
+  margin-top: 15px;
+  transition: background 0.2s, opacity 0.2s;
 }
-.btn-limpar:hover { background: rgba(239, 68, 68, 0.1); }
+
+.btn-principal:disabled {
+  background: #374151;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* === REVELAÇÃO CIRÚRGICA (FOTOS PARADAS) === */
+.hidden { display: none !important; }
+
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 3 / 4;
+  margin: 20px auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.15);
+}
+
+.slider-camada {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* O "Antes" preenche o fundo de forma estática */
+.camada-antes-fundo {
+  width: 100%;
+  z-index: 1;
+}
+
+/* O "Depois" fica no topo com largura variável (janela de corte) */
+.camada-depois-topo {
+  z-index: 2;
+  border-right: 3px solid #2563eb;
+}
+
+/* Imagens com largura dinâmica gerada via JS para impedir compressão */
+.slider-wrapper .img-render {
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.barra-divisoria {
+  position: absolute;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  top: 0;
+  left: 0;
+  margin: 0;
+  z-index: 3;
+  cursor: ew-resize;
+}
+
+.barra-divisoria::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 38px;
+  height: 38px;
+  background: #2563eb;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+  cursor: pointer;
+}
+
+.etiqueta-foto {
+  position: absolute;
+  bottom: 15px;
+  background: rgba(0,0,0,0.75);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  z-index: 4;
+  border: 1px solid rgba(255,255,255,0.1);
+  pointer-events: none;
+}
+.etiqueta-foto.a { left: 15px; }
+.etiqueta-foto.d { right: 15px; }

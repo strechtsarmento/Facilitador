@@ -3,74 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Facilitador de Evolução</title>
+  <title>Facilitador</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <main id="dashboard" class="container">
-    
-    <header class="topbar">
-      <h1>Evolução</h1>
-      <p>Acompanhe sua jornada diariamente</p>
-    </header>
+  <header class="topbar">
+    <h1>Facilitador</h1>
+    <p>Escolha o que você vai “facilitar” hoje</p>
+  </header>
 
-    <section class="card-destaque-jornada">
-      <div class="info-jornada">
-        <h2>Sua Jornada</h2>
-        <p class="meta-frase">Alvo: <strong>90,0 kg</strong></p>
-        <div class="pesos-progresso">
-          <div><span>Inicial</span><strong>162,5 kg</strong></div>
-          <div class="seta">→</div>
-          <div><span>Atual</span><strong class="peso-atual">131,0 kg</strong></div>
-        </div>
-        <div class="mini-indicadores">
-          <p>🔥 <strong>31,5 kg eliminados!</strong> (31L de gordura a menos)</p>
-          <p>🎯 Faltam 41,0 kg para a meta final.</p>
-        </div>
-      </div>
-
-      <div class="grafico-circular-container">
-        <div class="circulo-progresso" style="--porcentagem: 43.4%;">
-          <div class="circulo-centro">
-            <span class="num-porcentagem">43.4%</span>
-            <span class="sub-porcentagem">concluído</span>
-          </div>
-        </div>
-      </div>
-    </section>
+  <main class="container">
 
     <section class="grid">
-      <button class="card large" data-tela="antesDepois">
-        <strong>📸 Antes e Depois</strong>
-        <p>Alinhamento preciso com overlay e câmera.</p>
-      </button>
 
-      <button class="card" data-tela="alimentacao">
-        <strong>🍽️ Alimentação</strong>
-        <p>Controle de macros e calorias.</p>
-      </button>
-
-      <button class="card" data-tela="treinos">
-        <strong>💪 Treinos</strong>
-        <p>Checklist de musculação e cardio.</p>
-      </button>
-
-      <button class="card" data-tela="medidas">
-        <strong>📈 Gráficos & Medidas</strong>
-        <p>Evolução de peso e perímetros.</p>
-      </button>
-    </section>
-  </main>
-
-  <div id="tela-interna" class="tela-interna-container hidden">
-    <div class="header-interna">
-      <button id="btn-voltar" class="btn-voltar">← Voltar</button>
-      <h2 id="titulo-interna">Título da Tela</h2>
-    </div>
-    <div id="conteudo-interna" class="conteudo-interna">
+      <div class="card large" onclick="abrir('antesDepois')">
+        <h2>📸 Antes e Depois</h2>
+        <p>Compare imagens com precisão cirúrgica (ou quase isso).</p>
       </div>
-  </div>
+
+      <div class="card" onclick="abrir('galeria')">
+        <h3>🖼️ Galeria</h3>
+        <p>Suas imagens salvas</p>
+      </div>
+
+      <div class="card small" onclick="abrir('upload')">
+        <h3>⬆️ Upload</h3>
+      </div>
+
+      <div class="card tall" onclick="abrir('config')">
+        <h3>⚙️ Config</h3>
+        <p>Ajustes do sistema</p>
+      </div>
+
+      <div class="card" onclick="abrir('historico')">
+        <h3>🕓 Histórico</h3>
+        <p>Suas ações recentes</p>
+      </div>
+
+    </section>
+
+    <section id="view" class="view">
+      <p>Selecione um card acima 👆</p>
+    </section>
+
+  </main>
 
   <script src="js/script.js"></script>
 </body>

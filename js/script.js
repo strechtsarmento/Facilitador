@@ -1,193 +1,212 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const dashboard = document.getElementById("dashboard");
-  const telaInterna = document.getElementById("tela-interna");
-  const tituloInterna = document.getElementById("titulo-interna");
-  const conteudoInterna = document.getElementById("conteudo-interna");
-  const btnVoltar = document.getElementById("btn-voltar");
-  const grid = document.querySelector(".grid");
+// Variáveis globais para controlar o estado da transformação da foto "Depois"
+let transformacoes = { zoom: 1, x: 0, y: 0 };
+let arrastando = false;
+let inicioX = 0, inicioY = 0;
 
-  let streamLocal = null; // Guarda a câmera ativa para poder fechar depois
+function abrir(tela) {
+  const view = document.getElementById("view");
 
-  // Configurações das Telas Cheias internas
-  const conteudosTelas = {
-    antesDepois: {
-      titulo: "📸 Alinhamento Visivo Completo",
-      html: `
-        <p style="text-align:center; opacity:0.7; margin-bottom: 15px;">
-          Adicione uma imagem de base e use a opacidade para alinhar a nova captura com precisão de contornos.
+  const telas = {
+    antesDepois: `
+      <div class="modulo-alinhamento">
+        <h3 style="margin-top:0; color:#fff;">📸 Mesa de Alinhamento e Comparação</h3>
+        <p style="font-size:0.9rem; opacity:0.7; margin-bottom:20px;">
+          1. Carregue as duas fotos. <br>
+          2. Clique e arraste na imagem (ou use os botões) para alinhar os contornos do "Depois" sobre o "Antes". <br>
+          3. Clique em Gerar Slider para ver o efeito de revelação.
         </p>
-
-        <div class="controles-alinhamento">
-          <div class="campo-upload">
-            <label>1️⃣ Carregar Foto Base (Antes):</label>
-            <input type="file" id="upload-antes" accept="image/*" />
+        
+        <div class="controles-arquivos">
+          <div class="campo-foto">
+            <label>1️⃣ Foto Base (Antes):</label>
+            <input type="file" id="f-antes" accept="image/*" />
           </div>
-          <div class="campo-upload">
-            <label>2️⃣ Opacidade da Foto Fantasma: <span id="val-opacidade">50%</span></label>
-            <input type="range" id="range-opacidade" min="0" max="100" value="50" />
+          <div class="campo-foto">
+            <label>2️⃣ Foto Atual (Depois):</label>
+            <input type="file" id="f-depois" accept="image/*" />
           </div>
         </div>
 
-        <div class="camera-box">
-          <video id="webcam" autoplay playsinline></video>
-          <img id="img-overlay" class="hidden" alt="Overlay Fantasma" />
-          <canvas id="canvas-foto" class="hidden"></canvas>
+        <div class="controles-edicao">
+          <div class="grupo-botoes">
+            <button onclick="ajustarZoom(0.1)">🔍 Zoom +</button>
+            <button onclick="ajustarZoom(-0.1)">🔍 Zoom -</button>
+            <button onclick="resetarAjustes()">🔄 Resetar</button>
+          </div>
+          <div class="grupo-slider-opacidade">
+            <label>Opacidade do Alinhamento:</label>
+            <input type="range" id="opacidade-ajuste" min="10" max="90" value="50" />
+          </div>
         </div>
 
-        <div class="botoes-camera">
-          <button id="btn-ligar-camera" class="btn-acao azul">Ativar Câmera</button>
-          <button id="btn-capturar" class="btn-acao verde hidden">📸 Tirar Foto Atual</button>
+        <div class="canvas-alinhamento" id="area-arrastar">
+          <img id="preview-antes" class="img-base-alinhamento" src="" style="display:none;" />
+          
+          <div id="container-movivel" class="camada-movivel" style="transform: translate(0px, 0px) scale(1); opacity: 0.5;">
+            <img id="preview-depois" src="" style="display:none;" />
+          </div>
         </div>
 
-        <div id="resultado-captura" class="hidden" style="margin-top:25px; text-align:center;">
-          <h3>⚡ Nova Foto Alinhada com Sucesso!</h3>
-          <img id="img-depois-final" src="" style="max-width:100%; max-height:400px; border-radius:12px; border:2px solid #10b981;" />
-          <p style="font-size:0.85rem; opacity:0.6; margin-top:5px;">Esta imagem foi salva como seu "Depois".</p>
+        <button id="btn-gerar-slider" class="btn-principal" onclick="consolidarSlider()" disabled>
+          Gerar Slider de Comparação ⚡
+        </button>
+
+        <div id="container-slider-final" class="hidden">
+          <hr style="border-color: rgba(255,255,255,0.08); margin: 30px 0;">
+          <h3>↔️ Efeito Revelação (Imagens Fixas)</h3>
+          
+          <div class="slider-wrapper" id="slider-wrapper-box">
+            <div class="slider-camada camada-antes-fundo">
+              <div id="render-antes" class="img-render"></div>
+            </div>
+            
+            <div class="slider-camada camada-depois-topo" id="clip-depois-container" style="width: 50%;">
+              <div id="render-depois" class="img-render"></div>
+            </div>
+            
+            <input type="range" min="0" max="100" value="50" class="barra-divisoria" id="controle-slider-barra" />
+            <span class="etiqueta-foto a">Antes</span>
+            <span class="etiqueta-foto d">Depois</span>
+          </div>
         </div>
-
-        <button id="btn-limpar-fotos" class="btn-limpar">Resetar Imagens Salvas</button>
-      `,
-      init: () => {
-        const uploadAntes = document.getElementById("upload-antes");
-        const rangeOpacidade = document.getElementById("range-opacidade");
-        const valOpacidade = document.getElementById("val-opacidade");
-        const imgOverlay = document.getElementById("img-overlay");
-        const video = document.getElementById("webcam");
-        const canvas = document.getElementById("canvas-foto");
-        const btnLigar = document.getElementById("btn-ligar-camera");
-        const btnCapturar = document.getElementById("btn-capturar");
-        const resultadoCaptura = document.getElementById("resultado-captura");
-        const imgDepoisFinal = document.getElementById("img-depois-final");
-        const btnLimpar = document.getElementById("btn-limpar-fotos");
-
-        // Tenta buscar imagem do Antes salva localmente
-        const fotoSalva = localStorage.getItem("foto-antes");
-        if (fotoSalva) {
-          imgOverlay.src = fotoSalva;
-          imgOverlay.classList.remove("hidden");
-        }
-
-        // Recupera também a última tirada (Se houver)
-        const ultimaFotoDepois = localStorage.getItem("foto-depois");
-        if (ultimaFotoDepois) {
-          imgDepoisFinal.src = ultimaFotoDepois;
-          resultadoCaptura.classList.remove("hidden");
-        }
-
-        // Listener de upload do "Antes"
-        uploadAntes.addEventListener("change", (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              imgOverlay.src = event.target.result;
-              imgOverlay.classList.remove("hidden");
-              localStorage.setItem("foto-antes", event.target.result);
-            };
-            reader.readAsDataURL(file);
-          }
-        });
-
-        // Controle do slider de opacidade
-        rangeOpacidade.addEventListener("input", (e) => {
-          const valor = e.target.value;
-          valOpacidade.textContent = `${valor}%`;
-          imgOverlay.style.opacity = valor / 100;
-        });
-
-        // Evento de disparo e ativação da Webcam
-        btnLigar.addEventListener("click", async () => {
-          try {
-            streamLocal = await navigator.mediaDevices.getUserMedia({
-              video: { facingMode: "environment" }, // Força a câmera traseira no smartphone
-              audio: false
-            });
-            video.srcObject = streamLocal;
-            btnLigar.classList.add("hidden");
-            btnCapturar.classList.remove("hidden");
-          } catch (err) {
-            alert("Acesso negado ou câmera indisponível.");
-            console.error(err);
-          }
-        });
-
-        // Captura o frame e gera o JPEG final
-        btnCapturar.addEventListener("click", () => {
-          if (!streamLocal) return;
-
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          
-          const dataUrl = canvas.toDataURL("image/jpeg");
-          imgDepoisFinal.src = dataUrl;
-          resultadoCaptura.classList.remove("hidden");
-          
-          localStorage.setItem("foto-depois", dataUrl);
-
-          // Desliga o hardware da câmera
-          streamLocal.getTracks().forEach(track => track.stop());
-          btnLigar.classList.remove("hidden");
-          btnCapturar.classList.add("hidden");
-        });
-
-        // Limpa tudo
-        btnLimpar.addEventListener("click", () => {
-          localStorage.removeItem("foto-antes");
-          localStorage.removeItem("foto-depois");
-          imgOverlay.src = "";
-          imgOverlay.classList.add("hidden");
-          imgDepoisFinal.src = "";
-          resultadoCaptura.classList.add("hidden");
-        });
-      }
-    },
-    alimentacao: {
-      titulo: "🍽️ Diário Alimentar & Macros",
-      html: `<p style="opacity:0.6; text-align:center;">Painel para inserção de porções (Frango, feijão, vegetais) em desenvolvimento.</p>`
-    },
-    treinos: {
-      titulo: "💪 Checklist de Treinos",
-      html: `<p style="opacity:0.6; text-align:center;">Seu cronograma de treinos semanais (Musculação e Cardio) em breve.</p>`
-    },
-    medidas: {
-      titulo: "📈 Histórico de Medidas",
-      html: `<p style="opacity:0.6; text-align:center;">Gráficos de progresso para medidas antropométricas e peso em breve.</p>`
-    }
+      </div>
+    `,
+    galeria: "🖼️ <h3>Galeria</h3><p>Suas imagens salvas no banco de dados local.</p>",
+    upload: "⬆️ <h3>Upload</h3><p>Envie novas fotos de progresso aqui.</p>",
+    config: "⚙️ <h3>Configurações</h3><p>Ajustes do sistema do Facilitador.</p>",
+    historico: "🕓 <h3>Histórico</h3><p>Suas ações recentes carregadas.</p>"
   };
 
-  // Escuta os cliques na Grid para abrir as seções em tela cheia
-  grid.addEventListener("click", (e) => {
-    const card = e.target.closest(".card");
-    if (!card) return;
+  view.innerHTML = telas[tela] || `<p>Nada aqui ainda</p>`;
 
-    const chave = card.dataset.tela;
-    const config = conteudosTelas[chave];
+  if (tela === 'antesDepois') {
+    configurarMesaAlinhamento();
+  }
+}
 
-    if (config) {
-      tituloInterna.textContent = config.titulo;
-      conteudoInterna.innerHTML = config.html;
+function configurarMesaAlinhamento() {
+  const fAntes = document.getElementById("f-antes");
+  const fDepois = document.getElementById("f-depois");
+  const pAntes = document.getElementById("preview-antes");
+  const pDepois = document.getElementById("preview-depois");
+  const opacidadeRange = document.getElementById("opacidade-ajuste");
+  const containerMovivel = document.getElementById("container-movivel");
+  const areaArrastar = document.getElementById("area-arrastar");
 
-      dashboard.classList.add("hidden");
-      telaInterna.classList.remove("hidden");
-
-      if (typeof config.init === "function") {
-        config.init();
-      }
-      window.scrollTo(0, 0);
+  fAntes.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const r = new FileReader();
+      r.onload = (evt) => { 
+        pAntes.src = evt.target.result; 
+        pAntes.style.display = "block"; 
+        verificarImagensCarregadas(); 
+      };
+      r.readAsDataURL(file);
     }
   });
 
-  // Botão de Voltar à página inicial
-  btnVoltar.addEventListener("click", () => {
-    // Se o usuário voltar com a câmera ativa, desliga ela antes de sair
-    if (streamLocal) {
-      streamLocal.getTracks().forEach(track => track.stop());
-      streamLocal = null;
+  fDepois.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const r = new FileReader();
+      r.onload = (evt) => { 
+        pDepois.src = evt.target.result; 
+        pDepois.style.display = "block"; 
+        verificarImagensCarregadas(); 
+      };
+      r.readAsDataURL(file);
     }
-    telaInterna.classList.add("hidden");
-    dashboard.classList.remove("hidden");
   });
-});
+
+  opacidadeRange.addEventListener("input", (e) => {
+    containerMovivel.style.opacity = e.target.value / 100;
+  });
+
+  const iniciarArrasto = (e) => {
+    arrastando = true;
+    const clienteX = e.clientX || e.touches[0].clientX;
+    const clienteY = e.clientY || e.touches[0].clientY;
+    inicioX = clienteX - transformacoes.x;
+    inicioY = clienteY - transformacoes.y;
+  };
+
+  const moverArrasto = (e) => {
+    if (!arrastando) return;
+    e.preventDefault(); 
+    const clienteX = e.clientX || e.touches[0].clientX;
+    const clienteY = e.clientY || e.touches[0].clientY;
+    transformacoes.x = clienteX - inicioX;
+    transformacoes.y = clienteY - inicioY;
+    atualizarEstilosCamada();
+  };
+
+  const pararArrasto = () => { arrastando = false; };
+
+  areaArrastar.addEventListener("mousedown", iniciarArrasto);
+  areaArrastar.addEventListener("mousemove", moverArrasto);
+  window.addEventListener("mouseup", pararArrasto);
+
+  areaArrastar.addEventListener("touchstart", iniciarArrasto, { passive: false });
+  areaArrastar.addEventListener("touchmove", moverArrasto, { passive: false });
+  window.addEventListener("touchend", pararArrasto);
+}
+
+// CORRIGIDO: Variável pDepois estava como pLater inviabilizando a ativação do botão
+function verificarImagensCarregadas() {
+  const pAntes = document.getElementById("preview-antes").src;
+  const pDepois = document.getElementById("preview-depois").src;
+  const btn = document.getElementById("btn-gerar-slider");
+  
+  if (pAntes && pDepois && pAntes !== "" && pDepois !== "") {
+    btn.disabled = false;
+  }
+}
+
+function ajustarZoom(fator) {
+  transformacoes.zoom += fator;
+  if (transformacoes.zoom < 0.1) transformacoes.zoom = 0.1;
+  atualizarEstilosCamada();
+}
+
+function resetarAjustes() {
+  transformacoes = { zoom: 1, x: 0, y: 0 };
+  atualizarEstilosCamada();
+}
+
+function atualizarEstilosCamada() {
+  const camada = document.getElementById("container-movivel");
+  if (camada) {
+    camada.style.transform = `translate(${transformacoes.x}px, ${transformacoes.y}px) scale(${transformacoes.zoom})`;
+  }
+}
+
+function consolidarSlider() {
+  const pAntes = document.getElementById("preview-antes").src;
+  const pDepois = document.getElementById("preview-depois").src;
+  const containerSlider = document.getElementById("container-slider-final");
+  const wrapper = document.getElementById("slider-wrapper-box");
+
+  // Injeta o "Antes" estático no fundo
+  document.getElementById("render-antes").style.backgroundImage = `url(${pAntes})`;
+  
+  // Injeta o "Depois" na camada de topo e aplica o alinhamento calibrado
+  const rDepois = document.getElementById("render-depois");
+  rDepois.style.backgroundImage = `url(${pDepois})`;
+  rDepois.style.transform = `translate(${transformacoes.x}px, ${transformacoes.y}px) scale(${transformacoes.zoom})`;
+
+  containerSlider.classList.remove("hidden");
+
+  // Força o tamanho interno da imagem a bater exatamente com o tamanho real renderizado do wrapper (evita bugs no mobile)
+  const larguraReal = wrapper.offsetWidth;
+  document.querySelectorAll(".img-render").forEach(img => {
+    img.style.width = `${larguraReal}px`;
+  });
+
+  const barraSlider = document.getElementById("controle-slider-barra");
+  const clipDepoisContainer = document.getElementById("clip-depois-container");
+
+  barraSlider.addEventListener("input", (e) => {
+    clipDepoisContainer.style.width = `${e.target.value}%`;
+  });
+}
