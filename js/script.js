@@ -287,7 +287,7 @@ function loopRenderVisor(video, canvas, ctx) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // 1. Desenha a Câmera Viva ao fundo
+  // 1. Desenha a Câmera Viva ao fundo cobrindo o canvas
   ctx.save();
   if (modoCamera === "user") {
     ctx.translate(canvas.width, 0);
@@ -296,26 +296,36 @@ function loopRenderVisor(video, canvas, ctx) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // 2. Mescla o Overlay do 'Antes' se estiver no Passo 2
+  // 2. Mescla o Overlay do 'Antes' de forma perfeitamente centralizada e proporcional (Cover)
   if (alvoAtualCamera === 'depois' && imgAntesObjeto && imgAntesObjeto.complete) {
     ctx.save();
     ctx.globalAlpha = opacidadeLiveGlobal;
 
-    // Calcula escala e centralização do zoom do overlay
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    ctx.translate(cx, cy);
-    ctx.scale(transformacoesAntesOverlay.zoom, transformacoesAntesOverlay.zoom);
-    ctx.translate(-cx, -cy);
+    // Lógica de "Object-Fit: Cover" matemática para o Canvas
+    let imgLargura = imgAntesObjeto.width;
+    let imgAltura = imgAntesObjeto.height;
+    let canvasLargura = canvas.width;
+    let canvasAltura = canvas.height;
 
-    // Desenha cobrindo proporcionalmente
-    ctx.drawImage(imgAntesObjeto, 0, 0, canvas.width, canvas.height);
+    let escalaProporcional = Math.max(canvasLargura / imgLargura, canvasAltura / imgAltura);
+    
+    // Multiplica pelo zoom controlado pelos botões do usuário
+    let zoomFinal = escalaProporcional * transformacoesAntesOverlay.zoom;
+
+    let novaLargura = imgLargura * zoomFinal;
+    let novaAltura = imgAltura * zoomFinal;
+
+    // Centraliza o desenho da imagem com base no meio do visor
+    let xCentralizado = (canvasLargura - novaLargura) / 2;
+    let yCentralizado = (canvasAltura - novaAltura) / 2;
+
+    // Aplica o desenho final
+    ctx.drawImage(imgAntesObjeto, xCentralizado, yCentralizado, novaLargura, novaAltura);
     ctx.restore();
   }
 
   idAnimacaoCamera = requestAnimationFrame(() => loopRenderVisor(video, canvas, ctx));
 }
-
 function alternarLenteCamera() {
   modoCamera = (modoCamera === "environment") ? "user" : "environment";
   inicializarStreamCamera();
