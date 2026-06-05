@@ -1,19 +1,23 @@
 // =========================================================================
 // VARIÁVEIS DE ESTADO GLOBAL (MÓDULO ANTES E DEPOIS)
 // =========================================================================
-let transformacoes = { zoom: 1, x: 0, y: 0 };
-let transformacoesAntesOverlay = { zoom: 1 }; 
+let transformacoes = { zoom: 1, x: 0, y: 0 }; // Controle da mesa pós-captura
+
+// AGORA O OVERLAY TAMBÉM GUARDA POSIÇÃO X E Y
+let transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 }; 
+
 let arrastando = false;
+let arrastandoOverlayCam = false; // Novo estado para controlar o arrasto na câmera
 let inicioX = 0, inicioY = 0;
 
 let streamLocal = null;
-let modoCamera = "environment"; // 'environment' (traseira) ou 'user' (frontal)
+let modoCamera = "environment"; 
 let alvoAtualCamera = ""; 
-let idAnimacaoCamera = null; // Controla o loop de desenho do visor (Canvas)
+let idAnimacaoCamera = null; 
 
 let fotoAntesData = "";
 let fotoDepoisData = "";
-let imgAntesObjeto = null; // Instância da imagem na memória para o Canvas Live
+let imgAntesObjeto = null; 
 let opacidadeLiveGlobal = 0.5;
 
 // =========================================================================
@@ -59,7 +63,7 @@ function abrir(tela) {
             <span class="badge-etapa">Passo 2</span>
             <h4>Selecione a foto de DEPOIS e Alinhe</h4>
           </div>
-          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado em tempo real no visor.</p>
+          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado em tempo real no visor. Você pode arrastar o 'Antes' com o dedo no visor.</p>
           
           <div class="grupo-botoes-origem">
             <button class="btn-origem" onclick="abrirPainelCamera('depois')">📷 Tirar Foto na Posição</button>
@@ -95,6 +99,7 @@ function abrir(tela) {
               <div class="linha-controle">
                 <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
                 <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(-0.1)">🔍 Zoom Antes -</button>
+                <button class="btn-blur-control btn-reset-cam" onclick="resetarAjustesAntesOverlay()">🔄 Reset Pos</button>
               </div>
               <div class="linha-controle-slider">
                 <span>Transparência:</span>
@@ -177,6 +182,11 @@ function manipularArquivo(input, alvo) {
   }
 }
 
+function接收ImagemAntes(dataUrl) {
+  // Apenas mantendo mapeamento interno caso necessário
+  receberImagemAntes(dataUrl);
+}
+
 function receberImagemAntes(dataUrl) {
   fotoAntesData = dataUrl;
   document.getElementById("preview-antes").src = dataUrl;
@@ -213,7 +223,7 @@ function abrirPainelCamera(alvo) {
 
   if (alvo === 'depois' && fotoAntesData) {
     liveControls.classList.remove("hidden");
-    transformacoesAntesOverlay = { zoom: 1 };
+    transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 }; // Reseta estados do overlay da camera
   } else {
     liveControls.classList.add("hidden");
   }
@@ -253,6 +263,10 @@ async function inicializarStreamCamera() {
     video.onloadedmetadata = () => {
       canvasVisor.width = video.videoWidth || 640;
       canvasVisor.height = video.videoHeight || 480;
+      
+      // Inicializa os escutadores de toque no visor da câmera para arrastar o overlay
+      configurarArrastoOverlayCâmera(canvasVisor);
+      
       loopRenderVisor(video, canvasVisor, ctxVisor);
     };
 
@@ -262,10 +276,8 @@ async function inicializarStreamCamera() {
     const novoBtn = btnDisparar.cloneNode(true);
     btnDisparar.parentNode.replaceChild(novoBtn, btnDisparar);
 
-    // Evento do clique aciona a contagem regressiva de 5 segundos
     novoBtn.addEventListener("click", () => {
       executarContagemRegressiva(5, () => {
-        // Esta função executa estritamente após o fim do timer
         const canvasSnapshot = document.createElement("canvas");
         canvasSnapshot.width = canvasVisor.width;
         canvasSnapshot.height = canvasVisor.height;
@@ -295,13 +307,12 @@ async function inicializarStreamCamera() {
 }
 
 // LOGICA DO TEMPORIZADOR DE DISPARO (5 SEGUNDOS)
-function executarContagemRegressiva(segundos, callbackFinal) {
+function ejecutarContagemRegressiva(segundos, callbackFinal) {
   const displayTimer = document.getElementById("timer-display");
   const btnDisparar = document.getElementById("btn-disparar-foto");
   const btnVirar = document.getElementById("btn-virar-camera");
   const btnCancelar = document.getElementById("btn-cancelar-camera");
 
-  // Desativa e esconde os controlos periféricos para o utilizador focar na pose
   btnDisparar.style.pointerEvents = "none";
   btnDisparar.style.opacity = "0.3";
   if(btnVirar) btnVirar.style.visibility = "hidden";
@@ -320,25 +331,63 @@ function executarContagemRegressiva(segundos, callbackFinal) {
       displayTimer.classList.add("hidden");
       displayTimer.classList.remove("animar-pulso");
       
-      // Restaura os botões
       btnDisparar.style.pointerEvents = "auto";
       btnDisparar.style.opacity = "1";
       if(btnVirar) btnVirar.style.visibility = "visible";
       if(btnCancelar) btnCancelar.style.visibility = "visible";
       
-      // Tira a foto
       callbackFinal();
     } else {
       displayTimer.innerText = tempoRestante;
-      // Reinicia animação CSS de pulso a cada segundo
       displayTimer.classList.remove("animar-pulso");
-      void displayTimer.offsetWidth; // Força reflow no navegador mobile
+      void displayTimer.offsetWidth; 
       displayTimer.classList.add("animar-pulso");
     }
   }, 1000);
 }
 
-// MOTOR PROPORCIONAL UNIFICADO (VÍDEO + FANTASMA EM COVER CENTRALIZADO)
+// ESCOPO DE TOQUE EXCLUSIVO PARA MOVER O OVERLAY DURANTE O VISOR DA CÂMERA
+function configurarArrastoOverlayCâmera(canvasElement) {
+  
+  const obterCoordenadasCanaveral = (e) => {
+    const rect = canvasElement.getBoundingClientRect();
+    const clienteX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
+    const clienteY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
+    
+    // Mapeia o pixel escalado do bounding box de volta para a resolução nativa do canvas
+    const x = ((clienteX - rect.left) / rect.width) * canvasElement.width;
+    const y = ((clienteY - rect.top) / rect.height) * canvasElement.height;
+    return { x, y };
+  };
+
+  const iniciarArrastoCam = (e) => {
+    if (alvoAtualCamera !== 'depois') return;
+    arrastandoOverlayCam = true;
+    const coords = obterCoordenadasCanaveral(e);
+    inicioX = coords.x - transformacoesAntesOverlay.x;
+    inicioY = coords.y - transformacoesAntesOverlay.y;
+  };
+
+  const moverArrastoCam = (e) => {
+    if (!arrastandoOverlayCam) return;
+    if (e.cancelable) e.preventDefault();
+    const coords = obterCoordenadasCanaveral(e);
+    transformacoesAntesOverlay.x = coords.x - inicioX;
+    transformacoesAntesOverlay.y = coords.y - inicioY;
+  };
+
+  const pararArrastoCam = () => { arrastandoOverlayCam = false; };
+
+  canvasElement.addEventListener("mousedown", iniciarArrastoCam);
+  canvasElement.addEventListener("mousemove", moverArrastoCam);
+  window.addEventListener("mouseup", pararArrastoCam);
+
+  canvasElement.addEventListener("touchstart", iniciarArrastoCam, { passive: false });
+  canvasElement.addEventListener("touchmove", moverArrastoCam, { passive: false });
+  window.addEventListener("touchend", pararArrastoCam);
+}
+
+// MOTOR PROPORCIONAL COM SUPORTE A ZOOM + DESLOCAMENTO MANUAL (X, Y) DO OVERLAY
 function loopRenderVisor(video, canvas, ctx) {
   if (!streamLocal) return;
 
@@ -353,7 +402,7 @@ function loopRenderVisor(video, canvas, ctx) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // 2. Desenha a foto fantasma com object-fit cover centralizado matemático
+  // 2. Desenha a foto fantasma aplicando Object-Fit Cover + Deslocamento e Zoom customizados
   if (alvoAtualCamera === 'depois' && imgAntesObjeto && imgAntesObjeto.complete) {
     ctx.save();
     ctx.globalAlpha = opacidadeLiveGlobal;
@@ -369,10 +418,11 @@ function loopRenderVisor(video, canvas, ctx) {
     let novaLargura = imgLargura * zoomFinal;
     let novaAltura = imgAltura * zoomFinal;
 
-    let xCentralizado = (canvasLargura - novaLargura) / 2;
-    let yCentralizado = (canvasAltura - novaAltura) / 2;
+    // Posição base centralizada somada ao deslocamento (x, y) que o usuário fez arrastando
+    let xFinal = ((canvasLargura - novaLargura) / 2) + transformacoesAntesOverlay.x;
+    let yFinal = ((canvasAltura - novaAltura) / 2) + transformacoesAntesOverlay.y;
 
-    ctx.drawImage(imgAntesObjeto, xCentralizado, yCentralizado, novaLargura, novaAltura);
+    ctx.drawImage(imgAntesObjeto, xFinal, yFinal, novaLargura, novaAltura);
     ctx.restore();
   }
 
@@ -385,9 +435,13 @@ function alternarLenteCamera() {
 }
 
 function ajustarZoomAntesOverlay(fator) {
-  transformacoesAntesOverlay.zoom += faktor;
+  transformacoesAntesOverlay.zoom += fator;
   if (transformacoesAntesOverlay.zoom < 0.4) transformacoesAntesOverlay.zoom = 0.4;
   if (transformacoesAntesOverlay.zoom > 4.0) transformacoesAntesOverlay.zoom = 4.0;
+}
+
+function resetarAjustesAntesOverlay() {
+  transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 };
 }
 
 function atualizarOpacidadeLive(valor) {
@@ -413,7 +467,7 @@ function fecharCamera() {
 }
 
 // =========================================================================
-// CONFIGURAÇÃO DOS TOQUES MÓVEIS (GALAXY/IPHONE ARRASTAR MESA)
+// CONFIGURAÇÃO DOS TOQUES MÓVEIS (GALAXY/IPHONE ARRASTAR MESA PÓS-CAPTURA)
 // =========================================================================
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
