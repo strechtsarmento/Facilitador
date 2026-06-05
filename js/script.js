@@ -12,7 +12,7 @@ let distanciaPinchInicial = 0;
 let zoomInicialCam = 1;
 
 let streamLocal = null;
-let modoCamera = "environment"; 
+let modoCamera = "environment"; // "environment" = Traseira, "user" = Frontal
 let alvoAtualCamera = ""; 
 let idAnimacaoCamera = null; 
 
@@ -121,7 +121,7 @@ function abrir(tela) {
         </div>
 
         <button id="btn-gerar-slider" class="btn-principal hidden" onclick="consolidarSlider()">
-          Gerar Slider de Comparação Final ⚡
+          Gerar Slider de Comparison Final ⚡
         </button>
 
         <div id="container-slider-final" class="hidden">
@@ -262,7 +262,8 @@ async function inicializarStreamCamera() {
     const btnDisparar = document.getElementById("btn-disparar-foto");
     if (!disparadorConfigurado) {
       btnDisparar.addEventListener("click", () => {
-        executarContagemRegressiva(5, () => {
+        // FUNÇÃO DE CAPTURA DE FOTO
+        const capturarFotoFinal = () => {
           const canvasSnapshot = document.createElement("canvas");
           canvasSnapshot.width = canvasVisor.width;
           canvasSnapshot.height = canvasVisor.height;
@@ -282,7 +283,14 @@ async function inicializarStreamCamera() {
           } else {
             receberImagemDepois(resultadoData);
           }
-        });
+        };
+
+        // CONDICIONAL LOGICA: Se for frontal (user), roda 5s. Se for traseira (environment), vai direto!
+        if (modoCamera === "user") {
+          executarContagemRegressiva(5, capturarFotoFinal);
+        } else {
+          capturarFotoFinal();
+        }
       });
       disparadorConfigurado = true;
     }
@@ -471,26 +479,60 @@ function fecharCamera() {
   if (boxCam) boxCam.classList.add("hidden");
 }
 
+// =========================================================================
+// MESA GESTUAL COMPLETA: ARRASTE COM 1 DEDO + PINÇA DE ZOOM COM 2 DEDOS
+// =========================================================================
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
+  if (!areaArrastar) return;
+
+  let distPinchInicialMesa = 0;
+  let zoomInicialMesa = 1;
+
+  const obterDistanciaMesa = (t1, t2) => {
+    return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  };
 
   const iniciarArrasto = (e) => {
-    arrastando = true;
-    const touch = e.touches && e.touches.length ? e.touches[0] : e;
-    inicioX = touch.clientX - transformacoes.x;
-    inicioY = touch.clientY - transformacoes.y;
+    if (e.touches && e.touches.length === 2) {
+      arrastando = false;
+      distPinchInicialMesa = obterDistanciaMesa(e.touches[0], e.touches[1]);
+      zoomInicialMesa = transformacoes.zoom;
+    } else {
+      arrastando = true;
+      const touch = e.touches && e.touches.length ? e.touches[0] : e;
+      inicioX = touch.clientX - transformacoes.x;
+      inicioY = touch.clientY - transformacoes.y;
+    }
   };
 
   const moverArrasto = (e) => {
-    if (!arrastando) return;
-    if (e.cancelable) e.preventDefault(); 
-    const touch = e.touches && e.touches.length ? e.touches[0] : e;
-    transformacoes.x = touch.clientX - inicioX;
-    transformacoes.y = touch.clientY - inicioY;
-    atualizarEstilosCamadaDepois();
+    if (e.touches && e.touches.length === 2) {
+      if (distPinchInicialMesa > 0) {
+        const novaDist = obterDistanciaMesa(e.touches[0], e.touches[1]);
+        const proporcao = novaDist / distPinchInicialMesa;
+        let novoZoom = zoomInicialMesa * proporcao;
+
+        if (novoZoom < 0.4) novoZoom = 0.4;
+        if (novoZoom > 4.0) novoZoom = 4.0;
+
+        transformacoes.zoom = novoZoom;
+        atualizarEstilosCamadaDepois();
+      }
+    } 
+    else if (arrastando) {
+      if (e.cancelable) e.preventDefault(); 
+      const touch = e.touches && e.touches.length ? e.touches[0] : e;
+      transformacoes.x = touch.clientX - inicioX;
+      transformacoes.y = touch.clientY - inicioY;
+      atualizarEstilosCamadaDepois();
+    }
   };
 
-  const pararArrasto = () => { arrastando = false; };
+  const pararArrasto = () => { 
+    arrastando = false; 
+    distPinchInicialMesa = 0;
+  };
 
   areaArrastar.addEventListener("mousedown", iniciarArrasto);
   areaArrastar.addEventListener("mousemove", moverArrasto);
@@ -499,6 +541,7 @@ function configurarArrastoMesa() {
   areaArrastar.addEventListener("touchstart", iniciarArrasto, { passive: false });
   areaArrastar.addEventListener("touchmove", moverArrasto, { passive: false });
   window.addEventListener("touchend", pararArrasto);
+  areaArrastar.addEventListener("touchcancel", pararArrasto);
 }
 
 function ajustarZoomDepois(fator) {
