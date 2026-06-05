@@ -8,46 +8,51 @@
 </head>
 <body>
 
-  <header class="topbar">
-    <h1>Facilitador</h1>
-    <p>Escolha o que você vai “facilitar” hoje</p>
-  </header>
+  <div id="tela-inicial">
+    <header class="topbar">
+      <h1>Facilitador</h1>
+      <p>Escolha o que você vai “facilitar” hoje</p>
+    </header>
 
-  <main class="container">
+    <main class="container">
+      <section class="grid">
+        <div class="card large" onclick="abrir('antesDepois')">
+          <h2>📸 Antes e Depois</h2>
+          <p>Compare imagens com precisão cirúrgica por etapas.</p>
+        </div>
 
-    <section class="grid">
+        <div class="card" onclick="abrir('galeria')">
+          <h3>🖼️ Galeria</h3>
+          <p>Suas imagens salvas</p>
+        </div>
 
-      <div class="card large" onclick="abrir('antesDepois')">
-        <h2>📸 Antes e Depois</h2>
-        <p>Compare imagens com precisão cirúrgica (ou quase isso).</p>
-      </div>
+        <div class="card small" onclick="abrir('upload')">
+          <h3>⬆️ Upload</h3>
+        </div>
 
-      <div class="card" onclick="abrir('galeria')">
-        <h3>🖼️ Galeria</h3>
-        <p>Suas imagens salvas</p>
-      </div>
+        <div class="card tall" onclick="abrir('config')">
+          <h3>⚙️ Config</h3>
+          <p>Ajustes do sistema</p>
+        </div>
 
-      <div class="card small" onclick="abrir('upload')">
-        <h3>⬆️ Upload</h3>
-      </div>
+        <div class="card" onclick="abrir('historico')">
+          <h3>🕓 Histórico</h3>
+          <p>Suas ações recentes</p>
+        </div>
+      </section>
+    </main>
+  </div>
 
-      <div class="card tall" onclick="abrir('config')">
-        <h3>⚙️ Config</h3>
-        <p>Ajustes do sistema</p>
-      </div>
+  <div id="tela-modulo" class="hidden">
+    <header class="topbar-modulo">
+      <button class="btn-voltar" onclick="voltarParaMenu()">⬅️ Voltar ao Menu</button>
+      <h2 id="titulo-modulo">Módulo</h2>
+    </header>
 
-      <div class="card" onclick="abrir('historico')">
-        <h3>🕓 Histórico</h3>
-        <p>Suas ações recentes</p>
-      </div>
-
-    </section>
-
-    <section id="view" class="view">
-      <p>Selecione um card acima 👆</p>
-    </section>
-
-  </main>
+    <main class="container">
+      <section id="view" class="view-completa"></section>
+    </main>
+  </div>
 
   <script src="js/script.js"></script>
 </body>
