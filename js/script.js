@@ -2,12 +2,10 @@
 // VARIÁVEIS DE ESTADO GLOBAL (MÓDULO ANTES E DEPOIS)
 // =========================================================================
 let transformacoes = { zoom: 1, x: 0, y: 0 }; // Controle da mesa pós-captura
-
-// AGORA O OVERLAY TAMBÉM GUARDA POSIÇÃO X E Y
-let transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 }; 
+let transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 }; // Controle do overlay na câmera
 
 let arrastando = false;
-let arrastandoOverlayCam = false; // Novo estado para controlar o arrasto na câmera
+let arrastandoOverlayCam = false; 
 let inicioX = 0, inicioY = 0;
 
 let streamLocal = null;
@@ -63,7 +61,7 @@ function abrir(tela) {
             <span class="badge-etapa">Passo 2</span>
             <h4>Selecione a foto de DEPOIS e Alinhe</h4>
           </div>
-          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado em tempo real no visor. Você pode arrastar o 'Antes' com o dedo no visor.</p>
+          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado em tempo real no visor. Pode arrastar o 'Antes' com o dedo no visor.</p>
           
           <div class="grupo-botoes-origem">
             <button class="btn-origem" onclick="abrirPainelCamera('depois')">📷 Tirar Foto na Posição</button>
@@ -123,7 +121,7 @@ function abrir(tela) {
         </div>
 
         <button id="btn-gerar-slider" class="btn-principal hidden" onclick="consolidarSlider()">
-          Gerar Slider de Comparação Final ⚡
+          Gerar Slider de Comparison Final ⚡
         </button>
 
         <div id="container-slider-final" class="hidden">
@@ -182,11 +180,6 @@ function manipularArquivo(input, alvo) {
   }
 }
 
-function接收ImagemAntes(dataUrl) {
-  // Apenas mantendo mapeamento interno caso necessário
-  receberImagemAntes(dataUrl);
-}
-
 function receberImagemAntes(dataUrl) {
   fotoAntesData = dataUrl;
   document.getElementById("preview-antes").src = dataUrl;
@@ -223,7 +216,7 @@ function abrirPainelCamera(alvo) {
 
   if (alvo === 'depois' && fotoAntesData) {
     liveControls.classList.remove("hidden");
-    transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 }; // Reseta estados do overlay da camera
+    transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 }; 
   } else {
     liveControls.classList.add("hidden");
   }
@@ -264,9 +257,7 @@ async function inicializarStreamCamera() {
       canvasVisor.width = video.videoWidth || 640;
       canvasVisor.height = video.videoHeight || 480;
       
-      // Inicializa os escutadores de toque no visor da câmera para arrastar o overlay
-      configurarArrastoOverlayCâmera(canvasVisor);
-      
+      configurarArrastoOverlayCamera(canvasVisor);
       loopRenderVisor(video, canvasVisor, ctxVisor);
     };
 
@@ -307,7 +298,7 @@ async function inicializarStreamCamera() {
 }
 
 // LOGICA DO TEMPORIZADOR DE DISPARO (5 SEGUNDOS)
-function ejecutarContagemRegressiva(segundos, callbackFinal) {
+function executarContagemRegressiva(segundos, callbackFinal) {
   const displayTimer = document.getElementById("timer-display");
   const btnDisparar = document.getElementById("btn-disparar-foto");
   const btnVirar = document.getElementById("btn-virar-camera");
@@ -346,15 +337,13 @@ function ejecutarContagemRegressiva(segundos, callbackFinal) {
   }, 1000);
 }
 
-// ESCOPO DE TOQUE EXCLUSIVO PARA MOVER O OVERLAY DURANTE O VISOR DA CÂMERA
-function configurarArrastoOverlayCâmera(canvasElement) {
-  
-  const obterCoordenadasCanaveral = (e) => {
+// ESCOPO DE TOQUE PARA MOVER O OVERLAY NA CÂMERA
+function configurarArrastoOverlayCamera(canvasElement) {
+  const obterCoordenadasCanvas = (e) => {
     const rect = canvasElement.getBoundingClientRect();
     const clienteX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
     const clienteY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
     
-    // Mapeia o pixel escalado do bounding box de volta para a resolução nativa do canvas
     const x = ((clienteX - rect.left) / rect.width) * canvasElement.width;
     const y = ((clienteY - rect.top) / rect.height) * canvasElement.height;
     return { x, y };
@@ -363,7 +352,7 @@ function configurarArrastoOverlayCâmera(canvasElement) {
   const iniciarArrastoCam = (e) => {
     if (alvoAtualCamera !== 'depois') return;
     arrastandoOverlayCam = true;
-    const coords = obterCoordenadasCanaveral(e);
+    const coords = obterCoordenadasCanvas(e);
     inicioX = coords.x - transformacoesAntesOverlay.x;
     inicioY = coords.y - transformacoesAntesOverlay.y;
   };
@@ -371,7 +360,7 @@ function configurarArrastoOverlayCâmera(canvasElement) {
   const moverArrastoCam = (e) => {
     if (!arrastandoOverlayCam) return;
     if (e.cancelable) e.preventDefault();
-    const coords = obterCoordenadasCanaveral(e);
+    const coords = obterCoordenadasCanvas(e);
     transformacoesAntesOverlay.x = coords.x - inicioX;
     transformacoesAntesOverlay.y = coords.y - inicioY;
   };
@@ -387,7 +376,7 @@ function configurarArrastoOverlayCâmera(canvasElement) {
   window.addEventListener("touchend", pararArrastoCam);
 }
 
-// MOTOR PROPORCIONAL COM SUPORTE A ZOOM + DESLOCAMENTO MANUAL (X, Y) DO OVERLAY
+// MOTOR PROPORCIONAL UNIFICADO (VÍDEO + FANTASMA EM COVER CENTRALIZADO)
 function loopRenderVisor(video, canvas, ctx) {
   if (!streamLocal) return;
 
@@ -402,7 +391,7 @@ function loopRenderVisor(video, canvas, ctx) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // 2. Desenha a foto fantasma aplicando Object-Fit Cover + Deslocamento e Zoom customizados
+  // 2. Desenha a foto fantasma com object-fit cover centralizado matemático + arraste
   if (alvoAtualCamera === 'depois' && imgAntesObjeto && imgAntesObjeto.complete) {
     ctx.save();
     ctx.globalAlpha = opacidadeLiveGlobal;
@@ -418,7 +407,6 @@ function loopRenderVisor(video, canvas, ctx) {
     let novaLargura = imgLargura * zoomFinal;
     let novaAltura = imgAltura * zoomFinal;
 
-    // Posição base centralizada somada ao deslocamento (x, y) que o usuário fez arrastando
     let xFinal = ((canvasLargura - novaLargura) / 2) + transformacoesAntesOverlay.x;
     let yFinal = ((canvasAltura - novaAltura) / 2) + transformacoesAntesOverlay.y;
 
@@ -467,7 +455,7 @@ function fecharCamera() {
 }
 
 // =========================================================================
-// CONFIGURAÇÃO DOS TOQUES MÓVEIS (GALAXY/IPHONE ARRASTAR MESA PÓS-CAPTURA)
+// CONFIGURAÇÃO DOS TOQUES MÓVEIS (ARRASTAR MESA PÓS-CAPTURA)
 // =========================================================================
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
