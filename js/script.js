@@ -32,6 +32,7 @@ function abrir(tela) {
     antesDepois: `
       <div class="modulo-alinhamento">
         
+        <!-- ETAPA 1: DEFINIR O ANTES -->
         <div id="etapa-1" class="bloco-etapa ativa">
           <div class="topo-etapa">
             <span class="badge-etapa">Passo 1</span>
@@ -47,6 +48,7 @@ function abrir(tela) {
           </div>
         </div>
 
+        <!-- ETAPA 2: DEFINIR O DEPOIS + ALINHAMENTO -->
         <div id="etapa-2" class="bloco-etapa hidden">
           <div class="topo-etapa">
             <span class="badge-etapa">Passo 2</span>
@@ -62,6 +64,7 @@ function abrir(tela) {
             </label>
           </div>
 
+          <!-- CONTROLES DE EDIÇÃO (PÓS-CAPTURA) -->
           <div id="painel-edicao-controles" class="hidden">
             <div class="controles-edicao">
               <div class="grupo-botoes">
@@ -77,13 +80,17 @@ function abrir(tela) {
           </div>
         </div>
 
+        <!-- CONTAINER DA CÂMERA NATIVA COM OVERLAY INTELIGENTE -->
         <div id="container-camera-nativa" class="hidden">
           <div class="camera-box-stream">
-            <video id="video-stream" autoplay playsinline></video>
+            <!-- Visor em tempo real da Câmera (Adicionado playsinline e muted para iOS) -->
+            <video id="video-stream" autoplay playsinline muted></video>
             
+            <!-- Imagem de Overlay do Antes -->
             <img id="camera-overlay-antes-guia" class="overlay-antes-camera hidden" src="" />
           </div>
 
+          <!-- Controles dinâmicos do Overlay do Antes DURANTE a foto -->
           <div id="controles-overlay-live" class="controles-live-cam hidden">
             <div class="linha-controle">
               <button onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
@@ -95,6 +102,7 @@ function abrir(tela) {
             </div>
           </div>
 
+          <!-- Ações da Câmera -->
           <div class="acoes-camera-botoes">
             <button class="btn-camera-acao" onclick="alternarLenteCamera()">🔄 Virar Câmera</button>
             <button id="btn-disparar-foto" class="btn-camera-acao gatilho">🔴 Capturar</button>
@@ -102,6 +110,7 @@ function abrir(tela) {
           <button class="btn-link" onclick="fecharCamera()">Cancelar</button>
         </div>
 
+        <!-- MESA DE TRABALHO INTERATIVA (Ajuste pós-captura manual) -->
         <div class="canvas-alinhamento hidden" id="area-arrastar">
           <div id="container-movivel" class="camada-movivel" style="transform: translate(0px, 0px) scale(1);">
             <img id="preview-depois" src="" />
@@ -113,6 +122,7 @@ function abrir(tela) {
           Gerar Slider de Comparação Final ⚡
         </button>
 
+        <!-- CONTAINER DO SLIDER FINAL -->
         <div id="container-slider-final" class="hidden">
           <hr style="border-color: rgba(255,255,255,0.08); margin: 30px 0;">
           <h3>↔️ Resultado: Efeito Revelação</h3>
@@ -186,7 +196,6 @@ function receberImagemAntes(dataUrl) {
   fotoAntesData = dataUrl;
   document.getElementById("preview-antes").src = dataUrl;
   
-  // Atualiza também a imagem que servirá de guia na câmera viva
   const overlayCam = document.getElementById("camera-overlay-antes-guia");
   if(overlayCam) overlayCam.src = dataUrl;
 
@@ -208,9 +217,8 @@ function receberImagemDepois(dataUrl) {
   configurarArrastoMesa();
 }
 
-// Prepara e abre a interface de câmera
 function abrirPainelCamera(alvo) {
-  alvoActualCamera = alvo;
+  alvoAtualCamera = alvo;
   document.getElementById("container-camera-nativa").classList.remove("hidden");
   
   const liveControls = document.getElementById("controles-overlay-live");
@@ -229,19 +237,41 @@ function abrirPainelCamera(alvo) {
   inicializarStreamCamera();
 }
 
-// Inicia de facto o stream de vídeo respeitando o estado da lente (frontal/traseira)
+// Inicialização robusta focada em Mobile
 async function inicializarStreamCamera() {
+  // 1. Desliga rigidamente qualquer stream anterior para liberar o hardware mobile
   if (streamLocal) {
-    streamLocal.getTracks().forEach(track => track.stop());
+    streamLocal.getTracks().forEach(track => {
+      track.stop();
+    });
+    streamLocal = null;
   }
 
+  // Definições de restrição ideais para navegadores móveis
+  const restricoes = {
+    video: {
+      facingMode: { ideal: modoCamera },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    },
+    audio: false
+  };
+
   try {
-    streamLocal = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: modoCamera },
-      audio: false
-    });
+    streamLocal = await navigator.mediaDevices.getUserMedia(restricoes);
     const video = document.getElementById("video-stream");
-    video.srcObject = streamLocal;
+    
+    if ("srcObject" in video) {
+      video.srcObject = streamLocal;
+    } else {
+      video.src = window.URL.createObjectURL(streamLocal);
+    }
+
+    // Corrige bugs de reprodução forçada no Safari/iOS móvel
+    video.setAttribute("playsinline", true);
+    video.setAttribute("autoplay", true);
+    video.setAttribute("muted", true);
+    video.play().catch(e => console.log("Play pendente interativo:", e));
 
     const btnDisparar = document.getElementById("btn-disparar-foto");
     const novoBtn = btnDisparar.cloneNode(true);
@@ -249,22 +279,22 @@ async function inicializarStreamCamera() {
 
     novoBtn.addEventListener("click", () => {
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Captura usando as dimensões nativas reais do sensor capturado
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
       const ctx = canvas.getContext("2d");
       
-      // Se for câmera frontal, espelha a imagem salva para ficar natural
       if (modoCamera === "user") {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
       }
       
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const resultadoData = canvas.toDataURL("image/jpeg");
+      const resultadoData = canvas.toDataURL("image/jpeg", 0.9);
 
       fecharCamera();
 
-      if (alvoActualCamera === 'antes') {
+      if (alvoAtualCamera === 'antes') {
         receberImagemAntes(resultadoData);
       } else {
         receberImagemDepois(resultadoData);
@@ -272,23 +302,22 @@ async function inicializarStreamCamera() {
     });
 
   } catch (err) {
-    alert("Não foi possível acessar a câmera desejada ou permissão negada.");
+    console.error("Erro ao acessar câmera móvel:", err);
+    alert("Erro ao acessar a câmera. Verifique se deu permissões ou se está usando conexão segura HTTPS.");
     document.getElementById("container-camera-nativa").classList.add("hidden");
   }
 }
 
-// Função do Botão Virar Câmera
 function alternarLenteCamera() {
   modoCamera = (modoCamera === "environment") ? "user" : "environment";
-  if (streamLocal) {
-    inicializarStreamCamera();
-  }
+  inicializarStreamCamera(); // Reinicia com a nova câmera definida
 }
 
-// Ajustes do Zoom do Antes DURANTE o visor de câmera aberto
+// Ajustes do Zoom com limites seguros para não quebrar o layout mobile
 function ajustarZoomAntesOverlay(fator) {
   transformacoesAntesOverlay.zoom += fator;
-  if (transformacoesAntesOverlay.zoom < 0.2) transformacoesAntesOverlay.zoom = 0.2;
+  if (transformacoesAntesOverlay.zoom < 0.5) transformacoesAntesOverlay.zoom = 0.5;
+  if (transformacoesAntesOverlay.zoom > 3.0) transformacoesAntesOverlay.zoom = 3.0;
   atualizarEstiloOverlayLive();
 }
 
@@ -300,7 +329,8 @@ function atualizarOpacidadeLive(valor) {
 function atualizarEstiloOverlayLive() {
   const overlayCam = document.getElementById("camera-overlay-antes-guia");
   if (overlayCam) {
-    overlayCam.style.transform = `scale(${transformacoesAntesOverlay.zoom})`;
+    // Adicionado translate3d para forçar aceleração por hardware no telemóvel
+    overlayCam.style.transform = `translate3d(-50%, -50%, 0) scale(${transformacoesAntesOverlay.zoom})`;
   }
 }
 
@@ -313,7 +343,6 @@ function fecharCamera() {
   if (boxCam) boxCam.classList.add("hidden");
 }
 
-// Movimentação manual livre pós-captura na Mesa de Trabalho
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
   const opacidadeRange = document.getElementById("opacidade-ajuste");
@@ -354,7 +383,8 @@ function configurarArrastoMesa() {
 
 function ajustarZoomDepois(fator) {
   transformacoes.zoom += fator;
-  if (transformacoes.zoom < 0.1) transformacoes.zoom = 0.1;
+  if (transformacoes.zoom < 0.4) transformacoes.zoom = 0.4;
+  if (transformacoes.zoom > 4.0) transformacoes.zoom = 4.0;
   atualizarEstilosCamadaDepois();
 }
 
