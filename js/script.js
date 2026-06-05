@@ -89,6 +89,8 @@ function abrir(tela) {
             <video id="video-stream" autoplay playsinline muted style="display:none;"></video>
             <canvas id="canvas-visor-live"></canvas>
 
+            <div id="timer-display" class="timer-display-overlay hidden">5</div>
+
             <div id="controles-overlay-live" class="controles-live-cam hidden">
               <div class="linha-controle">
                 <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
@@ -102,9 +104,9 @@ function abrir(tela) {
           </div>
 
           <div class="barra-botoes-fotografica">
-            <button class="btn-circular secondary" onclick="alternarLenteCamera()" title="Virar Câmera">🔄</button>
+            <button class="btn-circular secondary" id="btn-virar-camera" onclick="alternarLenteCamera()" title="Virar Câmera">🔄</button>
             <button id="btn-disparar-foto" class="btn-circular gatilho" title="Capturar Foto"></button>
-            <button class="btn-circular secondary" onclick="fecharCamera()" title="Cancelar">❌</button>
+            <button class="btn-circular secondary" id="btn-cancelar-camera" onclick="fecharCamera()" title="Cancelar">❌</button>
           </div>
         </div>
 
@@ -260,26 +262,30 @@ async function inicializarStreamCamera() {
     const novoBtn = btnDisparar.cloneNode(true);
     btnDisparar.parentNode.replaceChild(novoBtn, btnDisparar);
 
+    // Evento do clique aciona a contagem regressiva de 5 segundos
     novoBtn.addEventListener("click", () => {
-      const canvasSnapshot = document.createElement("canvas");
-      canvasSnapshot.width = canvasVisor.width;
-      canvasSnapshot.height = canvasVisor.height;
-      const ctxSnap = canvasSnapshot.getContext("2d");
-      
-      if (modoCamera === "user") {
-        ctxSnap.translate(canvasSnapshot.width, 0);
-        ctxSnap.scale(-1, 1);
-      }
-      ctxSnap.drawImage(video, 0, 0, canvasSnapshot.width, canvasSnapshot.height);
-      const resultadoData = canvasSnapshot.toDataURL("image/jpeg", 0.95);
+      executarContagemRegressiva(5, () => {
+        // Esta função executa estritamente após o fim do timer
+        const canvasSnapshot = document.createElement("canvas");
+        canvasSnapshot.width = canvasVisor.width;
+        canvasSnapshot.height = canvasVisor.height;
+        const ctxSnap = canvasSnapshot.getContext("2d");
+        
+        if (modoCamera === "user") {
+          ctxSnap.translate(canvasSnapshot.width, 0);
+          ctxSnap.scale(-1, 1);
+        }
+        ctxSnap.drawImage(video, 0, 0, canvasSnapshot.width, canvasSnapshot.height);
+        const resultadoData = canvasSnapshot.toDataURL("image/jpeg", 0.95);
 
-      fecharCamera();
+        fecharCamera();
 
-      if (alvoAtualCamera === 'antes') {
-        receberImagemAntes(resultadoData);
-      } else {
-        receberImagemDepois(resultadoData);
-      }
+        if (alvoAtualCamera === 'antes') {
+          receberImagemAntes(resultadoData);
+        } else {
+          receberImagemDepois(resultadoData);
+        }
+      });
     });
 
   } catch (err) {
@@ -288,7 +294,51 @@ async function inicializarStreamCamera() {
   }
 }
 
-// MOTOR PROPORCIONAL UNIFICADO (VÍDEO + FANTASMA EM COVRE CENTRALIZADO)
+// LOGICA DO TEMPORIZADOR DE DISPARO (5 SEGUNDOS)
+function executarContagemRegressiva(segundos, callbackFinal) {
+  const displayTimer = document.getElementById("timer-display");
+  const btnDisparar = document.getElementById("btn-disparar-foto");
+  const btnVirar = document.getElementById("btn-virar-camera");
+  const btnCancelar = document.getElementById("btn-cancelar-camera");
+
+  // Desativa e esconde os controlos periféricos para o utilizador focar na pose
+  btnDisparar.style.pointerEvents = "none";
+  btnDisparar.style.opacity = "0.3";
+  if(btnVirar) btnVirar.style.visibility = "hidden";
+  if(btnCancelar) btnCancelar.style.visibility = "hidden";
+
+  let tempoRestante = segundos;
+  displayTimer.innerText = tempoRestante;
+  displayTimer.classList.remove("hidden");
+  displayTimer.classList.add("animar-pulso");
+
+  const intervalo = setInterval(() => {
+    tempoRestante--;
+    
+    if (tempoRestante <= 0) {
+      clearInterval(intervalo);
+      displayTimer.classList.add("hidden");
+      displayTimer.classList.remove("animar-pulso");
+      
+      // Restaura os botões
+      btnDisparar.style.pointerEvents = "auto";
+      btnDisparar.style.opacity = "1";
+      if(btnVirar) btnVirar.style.visibility = "visible";
+      if(btnCancelar) btnCancelar.style.visibility = "visible";
+      
+      // Tira a foto
+      callbackFinal();
+    } else {
+      displayTimer.innerText = tempoRestante;
+      // Reinicia animação CSS de pulso a cada segundo
+      displayTimer.classList.remove("animar-pulso");
+      void displayTimer.offsetWidth; // Força reflow no navegador mobile
+      displayTimer.classList.add("animar-pulso");
+    }
+  }, 1000);
+}
+
+// MOTOR PROPORCIONAL UNIFICADO (VÍDEO + FANTASMA EM COVER CENTRALIZADO)
 function loopRenderVisor(video, canvas, ctx) {
   if (!streamLocal) return;
 
@@ -335,7 +385,7 @@ function alternarLenteCamera() {
 }
 
 function ajustarZoomAntesOverlay(fator) {
-  transformacoesAntesOverlay.zoom += fator;
+  transformacoesAntesOverlay.zoom += faktor;
   if (transformacoesAntesOverlay.zoom < 0.4) transformacoesAntesOverlay.zoom = 0.4;
   if (transformacoesAntesOverlay.zoom > 4.0) transformacoesAntesOverlay.zoom = 4.0;
 }
