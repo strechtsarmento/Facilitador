@@ -1,23 +1,24 @@
 // Variáveis de estado global do módulo Antes e Depois
 let transformacoes = { zoom: 1, x: 0, y: 0 };
-let transformacoesAntesOverlay = { zoom: 1 }; // Zoom dedicado ao overlay do Antes na câmera
+let transformacoesAntesOverlay = { zoom: 1 }; 
 let arrastando = false;
 let inicioX = 0, inicioY = 0;
 
 let streamLocal = null;
-let modoCamera = "environment"; // 'environment' (traseira) ou 'user' (frontal)
-let alvoAtualCamera = ""; // 'antes' ou 'depois'
+let modoCamera = "environment"; 
+let alvoAtualCamera = ""; 
 
 let fotoAntesData = "";
 let fotoDepoisData = "";
 
-// Função para abrir o módulo em ecrã inteiro
+// Função principal para alternar as telas cheias
 function abrir(tela) {
   const telaInicial = document.getElementById("tela-inicial");
   const telaModulo = document.getElementById("tela-modulo");
   const tituloModulo = document.getElementById("titulo-modulo");
   const view = document.getElementById("view");
 
+  // Garante que qualquer câmera residual seja desligada ao trocar de módulo
   fecharCamera();
 
   const titulos = {
@@ -32,7 +33,6 @@ function abrir(tela) {
     antesDepois: `
       <div class="modulo-alinhamento">
         
-        <!-- ETAPA 1: DEFINIR O ANTES -->
         <div id="etapa-1" class="bloco-etapa ativa">
           <div class="topo-etapa">
             <span class="badge-etapa">Passo 1</span>
@@ -43,28 +43,26 @@ function abrir(tela) {
             <button class="btn-origem" onclick="abrirPainelCamera('antes')">📷 Tirar Foto</button>
             <label class="btn-origem label-file">
               📁 Escolher Arquivo
-              <input type="file" id="f-antes" accept="image/*" style="display:none;"/>
+              <input type="file" id="f-antes" accept="image/*" style="display:none;" onchange="manipularArquivo(this, 'antes')"/>
             </label>
           </div>
         </div>
 
-        <!-- ETAPA 2: DEFINIR O DEPOIS + ALINHAMENTO -->
         <div id="etapa-2" class="bloco-etapa hidden">
           <div class="topo-etapa">
             <span class="badge-etapa">Passo 2</span>
             <h4>Selecione a foto de DEPOIS e Alinhe</h4>
           </div>
-          <p class="sub-txt">Carregue a foto atual. Se optar por tirar foto, poderá ver o Antes em transparência sobre a câmera.</p>
+          <p class="sub-txt">A foto tirada ou escolhida exibirá o 'Antes' em transparência ajustável por cima para alinhamento.</p>
           
           <div class="grupo-botoes-origem">
             <button class="btn-origem" onclick="abrirPainelCamera('depois')">📷 Tirar Foto na Posição</button>
             <label class="btn-origem label-file">
               📁 Escolher Arquivo
-              <input type="file" id="f-depois" accept="image/*" style="display:none;"/>
+              <input type="file" id="f-depois" accept="image/*" style="display:none;" onchange="manipularArquivo(this, 'depois')"/>
             </label>
           </div>
 
-          <!-- CONTROLES DE EDIÇÃO (PÓS-CAPTURA) -->
           <div id="painel-edicao-controles" class="hidden">
             <div class="controles-edicao">
               <div class="grupo-botoes">
@@ -73,24 +71,19 @@ function abrir(tela) {
                 <button onclick="resetarAjustesDepois()">🔄 Resetar</button>
               </div>
               <div class="grupo-slider-opacidade">
-                <label>Opacidade do Overlay (Antes):</label>
-                <input type="range" id="opacidade-ajuste" min="10" max="90" value="50" />
+                <label>Opacidade do Antes:</label>
+                <input type="range" id="opacidade-ajuste" min="10" max="90" value="50" oninput="atualizarOpacidadeMesa(this.value)" />
               </div>
             </div>
           </div>
         </div>
 
-        <!-- CONTAINER DA CÂMERA NATIVA COM OVERLAY INTELIGENTE -->
         <div id="container-camera-nativa" class="hidden">
           <div class="camera-box-stream">
-            <!-- Visor em tempo real da Câmera (Adicionado playsinline e muted para iOS) -->
             <video id="video-stream" autoplay playsinline muted></video>
-            
-            <!-- Imagem de Overlay do Antes -->
             <img id="camera-overlay-antes-guia" class="overlay-antes-camera hidden" src="" />
           </div>
 
-          <!-- Controles dinâmicos do Overlay do Antes DURANTE a foto -->
           <div id="controles-overlay-live" class="controles-live-cam hidden">
             <div class="linha-controle">
               <button onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
@@ -102,7 +95,6 @@ function abrir(tela) {
             </div>
           </div>
 
-          <!-- Ações da Câmera -->
           <div class="acoes-camera-botoes">
             <button class="btn-camera-acao" onclick="alternarLenteCamera()">🔄 Virar Câmera</button>
             <button id="btn-disparar-foto" class="btn-camera-acao gatilho">🔴 Capturar</button>
@@ -110,7 +102,6 @@ function abrir(tela) {
           <button class="btn-link" onclick="fecharCamera()">Cancelar</button>
         </div>
 
-        <!-- MESA DE TRABALHO INTERATIVA (Ajuste pós-captura manual) -->
         <div class="canvas-alinhamento hidden" id="area-arrastar">
           <div id="container-movivel" class="camada-movivel" style="transform: translate(0px, 0px) scale(1);">
             <img id="preview-depois" src="" />
@@ -122,7 +113,6 @@ function abrir(tela) {
           Gerar Slider de Comparação Final ⚡
         </button>
 
-        <!-- CONTAINER DO SLIDER FINAL -->
         <div id="container-slider-final" class="hidden">
           <hr style="border-color: rgba(255,255,255,0.08); margin: 30px 0;">
           <h3>↔️ Resultado: Efeito Revelação</h3>
@@ -148,15 +138,12 @@ function abrir(tela) {
     historico: "<h3>🕓 Seu Histórico</h3><p>Lista de ações recentes executadas.</p>"
   };
 
+  // Aplica a troca de telas de forma imediata
   tituloModulo.innerText = titulos[tela] || "Módulo";
   view.innerHTML = telas[tela] || `<p>Conteúdo indisponível</p>`;
   
   telaInicial.classList.add("hidden");
   telaModulo.classList.remove("hidden");
-
-  if (tela === 'antesDepois') {
-    inicializarListenersFicheiros();
-  }
 }
 
 function voltarParaMenu() {
@@ -165,30 +152,19 @@ function voltarParaMenu() {
   document.getElementById("tela-modulo").classList.add("hidden");
 }
 
-function inicializarListenersFicheiros() {
-  const fAntes = document.getElementById("f-antes");
-  const fDepois = document.getElementById("f-depois");
-
-  if(fAntes) {
-    fAntes.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const r = new FileReader();
-        r.onload = (evt) => { receberImagemAntes(evt.target.result); };
-        r.readAsDataURL(file);
+// Manipulador de upload de arquivos compatível com Android antigo e novo
+function manipularArquivo(input, alvo) {
+  const file = input.files[0];
+  if (file) {
+    const r = new FileReader();
+    r.onload = (evt) => { 
+      if (alvo === 'antes') {
+        receberImagemAntes(evt.target.result);
+      } else {
+        receberImagemDepois(evt.target.result);
       }
-    });
-  }
-
-  if(fDepois) {
-    fDepois.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const r = new FileReader();
-        r.onload = (evt) => { receberImagemDepois(evt.target.result); };
-        r.readAsDataURL(file);
-      }
-    });
+    };
+    r.readAsDataURL(file);
   }
 }
 
@@ -237,17 +213,13 @@ function abrirPainelCamera(alvo) {
   inicializarStreamCamera();
 }
 
-// Inicialização robusta focada em Mobile
+// Inicialização da câmera reestruturada para evitar travas no Android Chrome
 async function inicializarStreamCamera() {
-  // 1. Desliga rigidamente qualquer stream anterior para liberar o hardware mobile
   if (streamLocal) {
-    streamLocal.getTracks().forEach(track => {
-      track.stop();
-    });
+    streamLocal.getTracks().forEach(track => track.stop());
     streamLocal = null;
   }
 
-  // Definições de restrição ideais para navegadores móveis
   const restricoes = {
     video: {
       facingMode: { ideal: modoCamera },
@@ -261,17 +233,15 @@ async function inicializarStreamCamera() {
     streamLocal = await navigator.mediaDevices.getUserMedia(restricoes);
     const video = document.getElementById("video-stream");
     
-    if ("srcObject" in video) {
-      video.srcObject = streamLocal;
-    } else {
-      video.src = window.URL.createObjectURL(streamLocal);
-    }
-
-    // Corrige bugs de reprodução forçada no Safari/iOS móvel
+    video.srcObject = streamLocal;
     video.setAttribute("playsinline", true);
     video.setAttribute("autoplay", true);
     video.setAttribute("muted", true);
-    video.play().catch(e => console.log("Play pendente interativo:", e));
+    
+    // Força o play no Android de forma assíncrona tolerante
+    setTimeout(() => {
+      video.play().catch(e => console.log("Aguardando interação:", e));
+    }, 50);
 
     const btnDisparar = document.getElementById("btn-disparar-foto");
     const novoBtn = btnDisparar.cloneNode(true);
@@ -279,7 +249,6 @@ async function inicializarStreamCamera() {
 
     novoBtn.addEventListener("click", () => {
       const canvas = document.createElement("canvas");
-      // Captura usando as dimensões nativas reais do sensor capturado
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
       const ctx = canvas.getContext("2d");
@@ -302,18 +271,16 @@ async function inicializarStreamCamera() {
     });
 
   } catch (err) {
-    console.error("Erro ao acessar câmera móvel:", err);
-    alert("Erro ao acessar a câmera. Verifique se deu permissões ou se está usando conexão segura HTTPS.");
+    alert("Câmera bloqueada. Certifique-se de que está usando uma conexão segura HTTPS ou deu permissão de câmera ao navegador nas configurações do Android.");
     document.getElementById("container-camera-nativa").classList.add("hidden");
   }
 }
 
 function alternarLenteCamera() {
   modoCamera = (modoCamera === "environment") ? "user" : "environment";
-  inicializarStreamCamera(); // Reinicia com a nova câmera definida
+  inicializarStreamCamera();
 }
 
-// Ajustes do Zoom com limites seguros para não quebrar o layout mobile
 function ajustarZoomAntesOverlay(fator) {
   transformacoesAntesOverlay.zoom += fator;
   if (transformacoesAntesOverlay.zoom < 0.5) transformacoesAntesOverlay.zoom = 0.5;
@@ -329,9 +296,13 @@ function atualizarOpacidadeLive(valor) {
 function atualizarEstiloOverlayLive() {
   const overlayCam = document.getElementById("camera-overlay-antes-guia");
   if (overlayCam) {
-    // Adicionado translate3d para forçar aceleração por hardware no telemóvel
-    overlayCam.style.transform = `translate3d(-50%, -50%, 0) scale(${transformacoesAntesOverlay.zoom})`;
+    overlayCam.style.transform = `scale(${transformacoesAntesOverlay.zoom})`;
   }
+}
+
+function atualizarOpacidadeMesa(valor) {
+  const pAntes = document.getElementById("preview-antes");
+  if(pAntes) pAntes.style.opacity = valor / 100;
 }
 
 function fecharCamera() {
@@ -343,28 +314,23 @@ function fecharCamera() {
   if (boxCam) boxCam.classList.add("hidden");
 }
 
+// Configuração de Touch para Arrastar na tela do celular (Mesa de Trabalho)
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
-  const opacidadeRange = document.getElementById("opacidade-ajuste");
-  const pAntes = document.getElementById("preview-antes");
-
-  opacidadeRange.addEventListener("input", (e) => {
-    pAntes.style.opacity = e.target.value / 100;
-  });
 
   const iniciarArrasto = (e) => {
     arrastando = true;
-    const clienteX = e.clientX || e.touches[0].clientX;
-    const clienteY = e.clientY || e.touches[0].clientY;
+    const clienteX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
+    const clienteY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
     inicioX = clienteX - transformacoes.x;
     inicioY = clienteY - transformacoes.y;
   };
 
   const moverArrasto = (e) => {
     if (!arrastando) return;
-    e.preventDefault(); 
-    const clienteX = e.clientX || e.touches[0].clientX;
-    const clienteY = e.clientY || e.touches[0].clientY;
+    if (e.cancelable) e.preventDefault(); 
+    const clienteX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
+    const clienteY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
     transformacoes.x = clienteX - inicioX;
     transformacoes.y = clienteY - inicioY;
     atualizarEstilosCamadaDepois();
