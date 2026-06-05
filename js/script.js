@@ -8,6 +8,10 @@ let arrastando = false;
 let arrastandoOverlayCam = false; 
 let inicioX = 0, inicioY = 0;
 
+// Variáveis para o cálculo do gesto de pinça (Pinch)
+let distanciaPinchInicial = 0;
+let zoomInicialCam = 1;
+
 let streamLocal = null;
 let modoCamera = "environment"; 
 let alvoAtualCamera = ""; 
@@ -18,7 +22,6 @@ let fotoDepoisData = "";
 let imgAntesObjeto = null; 
 let opacidadeLiveGlobal = 0.5;
 
-// Flag para evitar múltiplos listeners acumulados no botão de disparo
 let disparadorConfigurado = false;
 
 // =========================================================================
@@ -64,7 +67,7 @@ function abrir(tela) {
             <span class="badge-etapa">Passo 2</span>
             <h4>Selecione a foto de DEPOIS e Alinhe</h4>
           </div>
-          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado em tempo real no visor. Pode arrastar o 'Antes' com o dedo no visor.</p>
+          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado no visor. Use os dedos para arrastar ou fazer pinça de zoom.</p>
           
           <div class="grupo-botoes-origem">
             <button class="btn-origem" onclick="abrirPainelCamera('depois')">📷 Tirar Foto na Posição</button>
@@ -95,18 +98,14 @@ function abrir(tela) {
             <canvas id="canvas-visor-live"></canvas>
 
             <div id="timer-display" class="timer-display-overlay hidden">5</div>
+          </div>
 
-            <div id="controles-overlay-live" class="controles-live-cam hidden">
-              <div class="linha-controle">
-                <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
-                <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(-0.1)">🔍 Zoom Antes -</button>
-                <button class="btn-blur-control btn-reset-cam" onclick="resetarAjustesAntesOverlay()">🔄 Reset Pos</button>
-              </div>
-              <div class="linha-controle-slider">
-                <span>Transparência:</span>
-                <input type="range" id="opacidade-live-range" min="10" max="90" value="50" oninput="atualizarOpacidadeLive(this.value)" />
-              </div>
+          <div id="controles-overlay-live" class="painel-inferior-ajustes-cam hidden">
+            <div class="linha-controle-slider">
+              <span>Transparência do Overlay:</span>
+              <input type="range" id="opacidade-live-range" min="10" max="90" value="50" oninput="atualizarOpacidadeLive(this.value)" />
             </div>
+            <button class="btn-reset-cam-link" onclick="resetarAjustesAntesOverlay()">🔄 Resetar Posição e Zoom</button>
           </div>
 
           <div class="barra-botoes-fotografica">
@@ -158,7 +157,6 @@ function abrir(tela) {
   telaInicial.classList.add("hidden");
   telaModulo.classList.remove("hidden");
   
-  // Reseta estado do botão de disparo sempre que a tela reconstrói
   disparadorConfigurado = false;
 }
 
@@ -269,7 +267,6 @@ async function inicializarStreamCamera() {
 
     video.play().catch(e => console.log("Aguardando play ativo:", e));
 
-    // Correção Mobile: Configuração direta sem clonar o nó do botão
     const btnDisparar = document.getElementById("btn-disparar-foto");
     if (!disparadorConfigurado) {
       btnDisparar.addEventListener("click", () => {
@@ -299,22 +296,23 @@ async function inicializarStreamCamera() {
     }
 
   } catch (err) {
-    alert("Acesso à câmera negado. Use uma ligação segura HTTPS ou dê permissões no Android.");
+    alert("Acesso à câmera negado. Verifique as permissões de privacidade.");
     document.getElementById("container-camera-nativa").classList.add("hidden");
   }
 }
 
-// LOGICA DO TEMPORIZADOR DE DISPARO (5 SEGUNDOS)
 function executarContagemRegressiva(segundos, callbackFinal) {
   const displayTimer = document.getElementById("timer-display");
   const btnDisparar = document.getElementById("btn-disparar-foto");
   const btnVirar = document.getElementById("btn-virar-camera");
   const btnCancelar = document.getElementById("btn-cancelar-camera");
+  const liveControls = document.getElementById("controles-overlay-live");
 
   btnDisparar.style.pointerEvents = "none";
   btnDisparar.style.opacity = "0.3";
   if(btnVirar) btnVirar.style.visibility = "hidden";
   if(btnCancelar) btnCancelar.style.visibility = "hidden";
+  if(liveControls) liveControls.style.opacity = "0"; // Esconde sliders para focar na pose
 
   let tempoRestante = segundos;
   displayTimer.innerText = tempoRestante;
@@ -333,6 +331,7 @@ function executarContagemRegressiva(segundos, callbackFinal) {
       btnDisparar.style.opacity = "1";
       if(btnVirar) btnVirar.style.visibility = "visible";
       if(btnCancelar) btnCancelar.style.visibility = "visible";
+      if(liveControls) liveControls.style.opacity = "1";
       
       callbackFinal();
     } else {
@@ -344,59 +343,92 @@ function executarContagemRegressiva(segundos, callbackFinal) {
   }, 1000);
 }
 
-// ESCOPO DE TOQUE CORRIGIDO PARA ARRASTAR O OVERLAY SEM AFETAR OS BOTÕES PERIFÉRICOS
+// =========================================================================
+// NOVO SISTEMA GESTUAL MOBILE: ARRASTE (1 DEDO) E PINÇA ZOOM (2 DEDOS)
+// =========================================================================
 function configurarArrastoOverlayCamera(canvasElement) {
+  
+  // Função auxiliar matemática para medir a distância entre os dois dedos no ecrã
+  const obterDistanciaTouches = (t1, t2) => {
+    return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  };
+
   const obterCoordenadasCanvas = (e) => {
     const rect = canvasElement.getBoundingClientRect();
-    const clienteX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches.length ? e.touches[0].clientX : 0);
-    const clienteY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches.length ? e.touches[0].clientY : 0);
-    
-    const x = ((clienteX - rect.left) / rect.width) * canvasElement.width;
-    const y = ((clienteY - rect.top) / rect.height) * canvasElement.height;
+    const touch = e.touches && e.touches.length ? e.touches[0] : e;
+    const x = ((touch.clientX - rect.left) / rect.width) * canvasElement.width;
+    const y = ((touch.clientY - rect.top) / rect.height) * canvasElement.height;
     return { x, y };
   };
 
-  const iniciarArrastoCam = (e) => {
+  const iniciarToqueCam = (e) => {
     if (alvoAtualCamera !== 'depois') return;
-    arrastandoOverlayCam = true;
-    const coords = obterCoordenadasCanvas(e);
-    inicioX = coords.x - transformacoesAntesOverlay.x;
-    inicioY = coords.y - transformacoesAntesOverlay.y;
+
+    // Cenário A: Pinça de Zoom (2 dedos detectados)
+    if (e.touches && e.touches.length === 2) {
+      arrastandoOverlayCam = false; // Cancela o arrasto para focar no zoom
+      distanciaPinchInicial = obterDistanciaTouches(e.touches[0], e.touches[1]);
+      zoomInicialCam = transformacoesAntesOverlay.zoom;
+    } 
+    // Cenário B: Deslocamento Tradicional (1 dedo ou mouse)
+    else {
+      arrastandoOverlayCam = true;
+      const coords = obterCoordenadasCanvas(e);
+      inicioX = coords.x - transformacoesAntesOverlay.x;
+      inicioY = coords.y - transformacoesAntesOverlay.y;
+    }
   };
 
-  const moverArrastoCam = (e) => {
-    if (!arrastandoOverlayCam) return;
-    
-    // IMPORTANTE MOBILE: Impede o scroll de tela apenas se o alvo do toque for estritamente o canvas
+  const moverToqueCam = (e) => {
     if (e.cancelable && e.target === canvasElement) {
       e.preventDefault();
     }
-    
-    const coords = obterCoordenadasCanvas(e);
-    transformacoesAntesOverlay.x = coords.x - inicioX;
-    transformacoesAntesOverlay.y = coords.y - inicioY;
+
+    // Cenário A: Processando o Zoom em tempo real (2 dedos na tela)
+    if (e.touches && e.touches.length === 2) {
+      const novaDistancia = obterDistanciaTouches(e.touches[0], e.touches[1]);
+      if (distanciaPinchInicial > 0) {
+        const proporcaoEscala = novaDistancia / distanciaPinchInicial;
+        let novoZoom = zoomInicialCam * proporcaoEscala;
+        
+        // Limites de segurança estruturais do zoom fantasma
+        if (novoZoom < 0.3) novoZoom = 0.3;
+        if (novoZoom > 5.0) novoZoom = 5.0;
+        
+        transformacoesAntesOverlay.zoom = novoZoom;
+      }
+    } 
+    // Cenário B: Processando o deslocamento (1 dedo ativo)
+    else if (arrastandoOverlayCam) {
+      const coords = obterCoordenadasCanvas(e);
+      transformacoesAntesOverlay.x = coords.x - inicioX;
+      transformacoesAntesOverlay.y = coords.y - inicioY;
+    }
   };
 
-  const pararArrastoCam = () => { arrastandoOverlayCam = false; };
+  const pararToqueCam = () => { 
+    arrastandoOverlayCam = false; 
+    distanciaPinchInicial = 0;
+  };
 
-  // Eventos Desktop
-  canvasElement.addEventListener("mousedown", iniciarArrastoCam);
-  canvasElement.addEventListener("mousemove", moverArrastoCam);
-  window.addEventListener("mouseup", pararArrastoCam);
+  // Escutadores unificados Desktop
+  canvasElement.addEventListener("mousedown", iniciarToqueCam);
+  canvasElement.addEventListener("mousemove", moverToqueCam);
+  window.addEventListener("mouseup", pararToqueCam);
 
-  // Eventos Mobile Vinculados estritamente ao canvasElement (Não quebram a interface global)
-  canvasElement.addEventListener("touchstart", iniciarArrastoCam, { passive: false });
-  canvasElement.addEventListener("touchmove", moverArrastoCam, { passive: false });
-  canvasElement.addEventListener("touchend", pararArrastoCam);
+  // Escutadores com suporte multi-touch nativo do Smartphone
+  canvasElement.addEventListener("touchstart", iniciarToqueCam, { passive: false });
+  canvasElement.addEventListener("touchmove", moverToqueCam, { passive: false });
+  canvasElement.addEventListener("touchend", pararToqueCam);
+  canvasElement.addEventListener("touchcancel", pararToqueCam);
 }
 
-// MOTOR PROPORCIONAL UNIFICADO (VÍDEO + FANTASMA EM COVER CENTRALIZADO)
+// MOTOR DE RENDERIZAÇÃO LIVE VIEW
 function loopRenderVisor(video, canvas, ctx) {
   if (!streamLocal) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // 1. Desenha o feed da câmera viva ao fundo
   ctx.save();
   if (modoCamera === "user") {
     ctx.translate(canvas.width, 0);
@@ -405,7 +437,6 @@ function loopRenderVisor(video, canvas, ctx) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // 2. Desenha a foto fantasma com object-fit cover centralizado matemático + arraste
   if (alvoAtualCamera === 'depois' && imgAntesObjeto && imgAntesObjeto.complete) {
     ctx.save();
     ctx.globalAlpha = opacidadeLiveGlobal;
@@ -436,12 +467,6 @@ function alternarLenteCamera() {
   inicializarStreamCamera();
 }
 
-function ajustarZoomAntesOverlay(fator) {
-  transformacoesAntesOverlay.zoom += fator;
-  if (transformacoesAntesOverlay.zoom < 0.4) transformacoesAntesOverlay.zoom = 0.4;
-  if (transformacoesAntesOverlay.zoom > 4.0) transformacoesAntesOverlay.zoom = 4.0;
-}
-
 function resetarAjustesAntesOverlay() {
   transformacoesAntesOverlay = { zoom: 1, x: 0, y: 0 };
 }
@@ -469,26 +494,24 @@ function fecharCamera() {
 }
 
 // =========================================================================
-// CONFIGURAÇÃO DOS TOQUES MÓVEIS (ARRASTAR MESA PÓS-CAPTURA)
+// ARRASTAR MESA PÓS-CAPTURA
 // =========================================================================
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
 
   const iniciarArrasto = (e) => {
     arrastando = true;
-    const clienteX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches.length ? e.touches[0].clientX : 0);
-    const clienteY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches.length ? e.touches[0].clientY : 0);
-    inicioX = clienteX - transformacoes.x;
-    inicioY = clienteY - transformacoes.y;
+    const touch = e.touches && e.touches.length ? e.touches[0] : e;
+    inicioX = touch.clientX - transformacoes.x;
+    inicioY = touch.clientY - transformacoes.y;
   };
 
   const moverArrasto = (e) => {
     if (!arrastando) return;
     if (e.cancelable) e.preventDefault(); 
-    const clienteX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches.length ? e.touches[0].clientX : 0);
-    const clienteY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches.length ? e.touches[0].clientY : 0);
-    transformacoes.x = clienteX - inicioX;
-    transformacoes.y = clienteY - inicioY;
+    const touch = e.touches && e.touches.length ? e.touches[0] : e;
+    transformacoes.x = touch.clientX - inicioX;
+    transformacoes.y = touch.clientY - inicioY;
     atualizarEstilosCamadaDepois();
   };
 
@@ -522,9 +545,6 @@ function atualizarEstilosCamadaDepois() {
   }
 }
 
-// =========================================================================
-// PROCESSAMENTO DO SLIDER DE REVELAÇÃO FINAL
-// =========================================================================
 function consolidarSlider() {
   const containerSlider = document.getElementById("container-slider-final");
   const wrapper = document.getElementById("slider-wrapper-box");
