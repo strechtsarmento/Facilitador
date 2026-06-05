@@ -184,6 +184,11 @@ function manipularArquivo(input, alvo) {
   }
 }
 
+function接收ImagemAntes(dataUrl) {
+  // Mantida para compatibilidade interna se necessário
+  receberImagemAntes(dataUrl);
+}
+
 function receberImagemAntes(dataUrl) {
   fotoAntesData = dataUrl;
   document.getElementById("preview-antes").src = dataUrl;
@@ -301,7 +306,7 @@ async function inicializarStreamCamera() {
   }
 }
 
-function executarContagemRegressiva(segundos, callbackFinal) {
+function ejecutarContagemRegressiva(segundos, callbackFinal) {
   const displayTimer = document.getElementById("timer-display");
   const btnDisparar = document.getElementById("btn-disparar-foto");
   const btnVirar = document.getElementById("btn-virar-camera");
@@ -312,7 +317,7 @@ function executarContagemRegressiva(segundos, callbackFinal) {
   btnDisparar.style.opacity = "0.3";
   if(btnVirar) btnVirar.style.visibility = "hidden";
   if(btnCancelar) btnCancelar.style.visibility = "hidden";
-  if(liveControls) liveControls.style.opacity = "0"; // Esconde sliders para focar na pose
+  if(liveControls) liveControls.style.opacity = "0"; 
 
   let tempoRestante = segundos;
   displayTimer.innerText = tempoRestante;
@@ -344,11 +349,10 @@ function executarContagemRegressiva(segundos, callbackFinal) {
 }
 
 // =========================================================================
-// NOVO SISTEMA GESTUAL MOBILE: ARRASTE (1 DEDO) E PINÇA ZOOM (2 DEDOS)
+// SISTEMA GESTUAL MOBILE: ARRASTE (1 DEDO) E PINÇA ZOOM (2 DEDOS)
 // =========================================================================
 function configurarArrastoOverlayCamera(canvasElement) {
   
-  // Função auxiliar matemática para medir a distância entre os dois dedos no ecrã
   const obterDistanciaTouches = (t1, t2) => {
     return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
   };
@@ -364,13 +368,11 @@ function configurarArrastoOverlayCamera(canvasElement) {
   const iniciarToqueCam = (e) => {
     if (alvoAtualCamera !== 'depois') return;
 
-    // Cenário A: Pinça de Zoom (2 dedos detectados)
     if (e.touches && e.touches.length === 2) {
-      arrastandoOverlayCam = false; // Cancela o arrasto para focar no zoom
+      arrastandoOverlayCam = false; 
       distanciaPinchInicial = obterDistanciaTouches(e.touches[0], e.touches[1]);
       zoomInicialCam = transformacoesAntesOverlay.zoom;
     } 
-    // Cenário B: Deslocamento Tradicional (1 dedo ou mouse)
     else {
       arrastandoOverlayCam = true;
       const coords = obterCoordenadasCanvas(e);
@@ -384,21 +386,18 @@ function configurarArrastoOverlayCamera(canvasElement) {
       e.preventDefault();
     }
 
-    // Cenário A: Processando o Zoom em tempo real (2 dedos na tela)
     if (e.touches && e.touches.length === 2) {
       const novaDistancia = obterDistanciaTouches(e.touches[0], e.touches[1]);
       if (distanciaPinchInicial > 0) {
         const proporcaoEscala = novaDistancia / distanciaPinchInicial;
         let novoZoom = zoomInicialCam * proporcaoEscala;
         
-        // Limites de segurança estruturais do zoom fantasma
         if (novoZoom < 0.3) novoZoom = 0.3;
         if (novoZoom > 5.0) novoZoom = 5.0;
         
         transformacoesAntesOverlay.zoom = novoZoom;
       }
     } 
-    // Cenário B: Processando o deslocamento (1 dedo ativo)
     else if (arrastandoOverlayCam) {
       const coords = obterCoordenadasCanvas(e);
       transformacoesAntesOverlay.x = coords.x - inicioX;
@@ -411,15 +410,13 @@ function configurarArrastoOverlayCamera(canvasElement) {
     distanciaPinchInicial = 0;
   };
 
-  // Escutadores unificados Desktop
   canvasElement.addEventListener("mousedown", iniciarToqueCam);
   canvasElement.addEventListener("mousemove", moverToqueCam);
   window.addEventListener("mouseup", pararToqueCam);
 
-  // Escutadores com suporte multi-touch nativo do Smartphone
   canvasElement.addEventListener("touchstart", iniciarToqueCam, { passive: false });
   canvasElement.addEventListener("touchmove", moverToqueCam, { passive: false });
-  canvasElement.addEventListener("touchend", pararToqueCam);
+  window.addEventListener("touchend", pararToqueCam);
   canvasElement.addEventListener("touchcancel", pararToqueCam);
 }
 
