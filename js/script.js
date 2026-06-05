@@ -7,9 +7,12 @@ let inicioX = 0, inicioY = 0;
 let streamLocal = null;
 let modoCamera = "environment"; 
 let alvoAtualCamera = ""; 
+let idAnimacaoCamera = null; // Controla o loop de desenho do overlay no telemóvel
 
 let fotoAntesData = "";
 let fotoDepoisData = "";
+let imgAntesObjeto = null; // Guarda o objeto de imagem para o Canvas Live
+let opacidadeLiveGlobal = 0.5;
 
 // Função principal para alternar as telas cheias
 function abrir(tela) {
@@ -18,7 +21,6 @@ function abrir(tela) {
   const tituloModulo = document.getElementById("titulo-modulo");
   const view = document.getElementById("view");
 
-  // Garante que qualquer câmera residual seja desligada ao trocar de módulo
   fecharCamera();
 
   const titulos = {
@@ -53,7 +55,7 @@ function abrir(tela) {
             <span class="badge-etapa">Passo 2</span>
             <h4>Selecione a foto de DEPOIS e Alinhe</h4>
           </div>
-          <p class="sub-txt">A foto tirada ou escolhida exibirá o 'Antes' em transparência ajustável por cima para alinhamento.</p>
+          <p class="sub-txt">Tire a foto atual vendo o 'Antes' mesclado em tempo real no visor.</p>
           
           <div class="grupo-botoes-origem">
             <button class="btn-origem" onclick="abrirPainelCamera('depois')">📷 Tirar Foto na Posição</button>
@@ -66,9 +68,9 @@ function abrir(tela) {
           <div id="painel-edicao-controles" class="hidden">
             <div class="controles-edicao">
               <div class="grupo-botoes">
-                <button onclick="ajustarZoomDepois(0.1)">🔍 Zoom Depois +</button>
-                <button onclick="ajustarZoomDepois(-0.1)">🔍 Zoom Depois -</button>
-                <button onclick="resetarAjustesDepois()">🔄 Resetar</button>
+                <button class="btn-mini" onclick="ajustarZoomDepois(0.1)">🔍 Zoom +</button>
+                <button class="btn-mini" onclick="ajustarZoomDepois(-0.1)">🔍 Zoom -</button>
+                <button class="btn-mini btn-reset" onclick="resetarAjustesDepois()">🔄 Reset</button>
               </div>
               <div class="grupo-slider-opacidade">
                 <label>Opacidade do Antes:</label>
@@ -80,26 +82,26 @@ function abrir(tela) {
 
         <div id="container-camera-nativa" class="hidden">
           <div class="camera-box-stream">
-            <video id="video-stream" autoplay playsinline muted></video>
-            <img id="camera-overlay-antes-guia" class="overlay-antes-camera hidden" src="" />
+            <video id="video-stream" autoplay playsinline muted style="display:none;"></video>
+            <canvas id="canvas-visor-live"></canvas>
+
+            <div id="controles-overlay-live" class="controles-live-cam hidden">
+              <div class="linha-controle">
+                <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
+                <button class="btn-blur-control" onclick="ajustarZoomAntesOverlay(-0.1)">🔍 Zoom Antes -</button>
+              </div>
+              <div class="linha-controle-slider">
+                <span>Transparência:</span>
+                <input type="range" id="opacidade-live-range" min="10" max="90" value="50" oninput="atualizarOpacidadeLive(this.value)" />
+              </div>
+            </div>
           </div>
 
-          <div id="controles-overlay-live" class="controles-live-cam hidden">
-            <div class="linha-controle">
-              <button onclick="ajustarZoomAntesOverlay(0.1)">🔍 Zoom Antes +</button>
-              <button onclick="ajustarZoomAntesOverlay(-0.1)">🔍 Zoom Antes -</button>
-            </div>
-            <div class="linha-controle">
-              <label>Transparência:</label>
-              <input type="range" id="opacidade-live-range" min="10" max="90" value="50" oninput="atualizarOpacidadeLive(this.value)" />
-            </div>
+          <div class="barra-botoes-fotografica">
+            <button class="btn-circular secondary" onclick="alternarLenteCamera()" title="Virar Câmera">🔄</button>
+            <button id="btn-disparar-foto" class="btn-circular gatilho" title="Capturar Foto"></button>
+            <button class="btn-circular secondary" onclick="fecharCamera()" title="Cancelar">❌</button>
           </div>
-
-          <div class="acoes-camera-botoes">
-            <button class="btn-camera-acao" onclick="alternarLenteCamera()">🔄 Virar Câmera</button>
-            <button id="btn-disparar-foto" class="btn-camera-acao gatilho">🔴 Capturar</button>
-          </div>
-          <button class="btn-link" onclick="fecharCamera()">Cancelar</button>
         </div>
 
         <div class="canvas-alinhamento hidden" id="area-arrastar">
@@ -138,7 +140,6 @@ function abrir(tela) {
     historico: "<h3>🕓 Seu Histórico</h3><p>Lista de ações recentes executadas.</p>"
   };
 
-  // Aplica a troca de telas de forma imediata
   tituloModulo.innerText = titulos[tela] || "Módulo";
   view.innerHTML = telas[tela] || `<p>Conteúdo indisponível</p>`;
   
@@ -152,7 +153,6 @@ function voltarParaMenu() {
   document.getElementById("tela-modulo").classList.add("hidden");
 }
 
-// Manipulador de upload de arquivos compatível com Android antigo e novo
 function manipularArquivo(input, alvo) {
   const file = input.files[0];
   if (file) {
@@ -172,8 +172,9 @@ function receberImagemAntes(dataUrl) {
   fotoAntesData = dataUrl;
   document.getElementById("preview-antes").src = dataUrl;
   
-  const overlayCam = document.getElementById("camera-overlay-antes-guia");
-  if(overlayCam) overlayCam.src = dataUrl;
+  // Prepara a instância da imagem em memória para pintura no canvas live
+  imgAntesObjeto = new Image();
+  imgAntesObjeto.src = dataUrl;
 
   document.getElementById("etapa-1").classList.remove("ativa");
   document.getElementById("etapa-1").classList.add("hidden");
@@ -198,26 +199,24 @@ function abrirPainelCamera(alvo) {
   document.getElementById("container-camera-nativa").classList.remove("hidden");
   
   const liveControls = document.getElementById("controles-overlay-live");
-  const overlayCam = document.getElementById("camera-overlay-antes-guia");
 
   if (alvo === 'depois' && fotoAntesData) {
     liveControls.classList.remove("hidden");
-    overlayCam.classList.remove("hidden");
     transformacoesAntesOverlay = { zoom: 1 };
-    atualizarEstiloOverlayLive();
   } else {
     liveControls.classList.add("hidden");
-    overlayCam.classList.add("hidden");
   }
 
   inicializarStreamCamera();
 }
 
-// Inicialização da câmera reestruturada para evitar travas no Android Chrome
 async function inicializarStreamCamera() {
   if (streamLocal) {
     streamLocal.getTracks().forEach(track => track.stop());
     streamLocal = null;
+  }
+  if (idAnimacaoCamera) {
+    cancelAnimationFrame(idAnimacaoCamera);
   }
 
   const restricoes = {
@@ -232,34 +231,40 @@ async function inicializarStreamCamera() {
   try {
     streamLocal = await navigator.mediaDevices.getUserMedia(restricoes);
     const video = document.getElementById("video-stream");
+    const canvasVisor = document.getElementById("canvas-visor-live");
+    const ctxVisor = canvasVisor.getContext("2d");
     
     video.srcObject = streamLocal;
     video.setAttribute("playsinline", true);
     video.setAttribute("autoplay", true);
     video.setAttribute("muted", true);
     
-    // Força o play no Android de forma assíncrona tolerante
-    setTimeout(() => {
-      video.play().catch(e => console.log("Aguardando interação:", e));
-    }, 50);
+    video.onloadedmetadata = () => {
+      canvasVisor.width = video.videoWidth || 640;
+      canvasVisor.height = video.videoHeight || 480;
+      // Inicia o render em loop contínuo unificado
+      loopRenderVisor(video, canvasVisor, ctxVisor);
+    };
+
+    video.play().catch(e => console.log("Play pendente:", e));
 
     const btnDisparar = document.getElementById("btn-disparar-foto");
     const novoBtn = btnDisparar.cloneNode(true);
     btnDisparar.parentNode.replaceChild(novoBtn, btnDisparar);
 
     novoBtn.addEventListener("click", () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      const ctx = canvas.getContext("2d");
+      const canvasSnapshot = document.createElement("canvas");
+      canvasSnapshot.width = canvasVisor.width;
+      canvasSnapshot.height = canvasVisor.height;
+      const ctxSnap = canvasSnapshot.getContext("2d");
       
+      // Captura puramente o vídeo real (sem misturar o fantasma na foto final)
       if (modoCamera === "user") {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
+        ctxSnap.translate(canvasSnapshot.width, 0);
+        ctxSnap.scale(-1, 1);
       }
-      
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const resultadoData = canvas.toDataURL("image/jpeg", 0.9);
+      ctxSnap.drawImage(video, 0, 0, canvasSnapshot.width, canvasSnapshot.height);
+      const resultadoData = canvasSnapshot.toDataURL("image/jpeg", 0.95);
 
       fecharCamera();
 
@@ -271,9 +276,44 @@ async function inicializarStreamCamera() {
     });
 
   } catch (err) {
-    alert("Câmera bloqueada. Certifique-se de que está usando uma conexão segura HTTPS ou deu permissão de câmera ao navegador nas configurações do Android.");
+    alert("Câmera bloqueada. Verifique suas permissões de privacidade ou garanta o uso de HTTPS.");
     document.getElementById("container-camera-nativa").classList.add("hidden");
   }
+}
+
+// Renderizador Unificado: Combina câmera e imagem fantasma eliminando invisibilidade em celulares
+function loopRenderVisor(video, canvas, ctx) {
+  if (!streamLocal) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // 1. Desenha a Câmera Viva ao fundo
+  ctx.save();
+  if (modoCamera === "user") {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  // 2. Mescla o Overlay do 'Antes' se estiver no Passo 2
+  if (alvoAtualCamera === 'depois' && imgAntesObjeto && imgAntesObjeto.complete) {
+    ctx.save();
+    ctx.globalAlpha = opacidadeLiveGlobal;
+
+    // Calcula escala e centralização do zoom do overlay
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    ctx.translate(cx, cy);
+    ctx.scale(transformacoesAntesOverlay.zoom, transformacoesAntesOverlay.zoom);
+    ctx.translate(-cx, -cy);
+
+    // Desenha cobrindo proporcionalmente
+    ctx.drawImage(imgAntesObjeto, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  idAnimacaoCamera = requestAnimationFrame(() => loopRenderVisor(video, canvas, ctx));
 }
 
 function alternarLenteCamera() {
@@ -283,21 +323,12 @@ function alternarLenteCamera() {
 
 function ajustarZoomAntesOverlay(fator) {
   transformacoesAntesOverlay.zoom += fator;
-  if (transformacoesAntesOverlay.zoom < 0.5) transformacoesAntesOverlay.zoom = 0.5;
-  if (transformacoesAntesOverlay.zoom > 3.0) transformacoesAntesOverlay.zoom = 3.0;
-  atualizarEstiloOverlayLive();
+  if (transformacoesAntesOverlay.zoom < 0.4) transformacoesAntesOverlay.zoom = 0.4;
+  if (transformacoesAntesOverlay.zoom > 4.0) transformacoesAntesOverlay.zoom = 4.0;
 }
 
 function atualizarOpacidadeLive(valor) {
-  const overlayCam = document.getElementById("camera-overlay-antes-guia");
-  if (overlayCam) overlayCam.style.opacity = valor / 100;
-}
-
-function atualizarEstiloOverlayLive() {
-  const overlayCam = document.getElementById("camera-overlay-antes-guia");
-  if (overlayCam) {
-    overlayCam.style.transform = `scale(${transformacoesAntesOverlay.zoom})`;
-  }
+  opacidadeLiveGlobal = valor / 100;
 }
 
 function atualizarOpacidadeMesa(valor) {
@@ -306,6 +337,10 @@ function atualizarOpacidadeMesa(valor) {
 }
 
 function fecharCamera() {
+  if (idAnimacaoCamera) {
+    cancelAnimationFrame(idAnimacaoCamera);
+    idAnimacaoCamera = null;
+  }
   if (streamLocal) {
     streamLocal.getTracks().forEach(track => track.stop());
     streamLocal = null;
@@ -314,7 +349,6 @@ function fecharCamera() {
   if (boxCam) boxCam.classList.add("hidden");
 }
 
-// Configuração de Touch para Arrastar na tela do celular (Mesa de Trabalho)
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
 
