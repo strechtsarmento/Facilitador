@@ -8,7 +8,6 @@ let arrastando = false;
 let arrastandoOverlayCam = false; 
 let inicioX = 0, inicioY = 0;
 
-// Variáveis para o cálculo do gesto de pinça (Pinch)
 let distanciaPinchInicial = 0;
 let zoomInicialCam = 1;
 
@@ -96,7 +95,6 @@ function abrir(tela) {
           <div class="camera-box-stream">
             <video id="video-stream" autoplay playsinline muted style="display:none;"></video>
             <canvas id="canvas-visor-live"></canvas>
-
             <div id="timer-display" class="timer-display-overlay hidden">5</div>
           </div>
 
@@ -166,9 +164,6 @@ function voltarParaMenu() {
   document.getElementById("tela-modulo").classList.add("hidden");
 }
 
-// =========================================================================
-// GESTÃO DE ARQUIVOS (UPLOAD)
-// =========================================================================
 function manipularArquivo(input, alvo) {
   const file = input.files[0];
   if (file) {
@@ -182,11 +177,6 @@ function manipularArquivo(input, alvo) {
     };
     r.readAsDataURL(file);
   }
-}
-
-function接收ImagemAntes(dataUrl) {
-  // Mantida para compatibilidade interna se necessário
-  receberImagemAntes(dataUrl);
 }
 
 function receberImagemAntes(dataUrl) {
@@ -214,9 +204,6 @@ function receberImagemDepois(dataUrl) {
   configurarArrastoMesa();
 }
 
-// =========================================================================
-// CONTROLO DA CÂMERA E FLUXO LIVE VIEW
-// =========================================================================
 function abrirPainelCamera(alvo) {
   alvoAtualCamera = alvo;
   document.getElementById("container-camera-nativa").classList.remove("hidden");
@@ -301,12 +288,12 @@ async function inicializarStreamCamera() {
     }
 
   } catch (err) {
-    alert("Acesso à câmera negado. Verifique as permissões de privacidade.");
+    alert("Acesso à câmera negado. Verifique as permissões.");
     document.getElementById("container-camera-nativa").classList.add("hidden");
   }
 }
 
-function ejecutarContagemRegressiva(segundos, callbackFinal) {
+function executarContagemRegressiva(segundos, callbackFinal) {
   const displayTimer = document.getElementById("timer-display");
   const btnDisparar = document.getElementById("btn-disparar-foto");
   const btnVirar = document.getElementById("btn-virar-camera");
@@ -348,11 +335,7 @@ function ejecutarContagemRegressiva(segundos, callbackFinal) {
   }, 1000);
 }
 
-// =========================================================================
-// SISTEMA GESTUAL MOBILE: ARRASTE (1 DEDO) E PINÇA ZOOM (2 DEDOS)
-// =========================================================================
 function configurarArrastoOverlayCamera(canvasElement) {
-  
   const obterDistanciaTouches = (t1, t2) => {
     return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
   };
@@ -417,10 +400,8 @@ function configurarArrastoOverlayCamera(canvasElement) {
   canvasElement.addEventListener("touchstart", iniciarToqueCam, { passive: false });
   canvasElement.addEventListener("touchmove", moverToqueCam, { passive: false });
   window.addEventListener("touchend", pararToqueCam);
-  canvasElement.addEventListener("touchcancel", pararToqueCam);
 }
 
-// MOTOR DE RENDERIZAÇÃO LIVE VIEW
 function loopRenderVisor(video, canvas, ctx) {
   if (!streamLocal) return;
 
@@ -490,9 +471,6 @@ function fecharCamera() {
   if (boxCam) boxCam.classList.add("hidden");
 }
 
-// =========================================================================
-// ARRASTAR MESA PÓS-CAPTURA
-// =========================================================================
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
 

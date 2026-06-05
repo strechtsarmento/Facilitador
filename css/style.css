@@ -87,7 +87,7 @@ p.sub-txt {
   margin: 0 auto;
 }
 
-/* Fluxo de Etapas (Passo 1 e Passo 2) */
+/* Fluxo de Etapas */
 .bloco-etapa {
   background: #121214;
   border: 1px solid #29292e;
@@ -147,33 +147,34 @@ p.sub-txt {
    4. INTERFACE DA CÂMERA INTEGRADA E LIMPA (SEM OBSTRUÇÃO)
    ========================================================================= */
 #container-camera-nativa {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #121214;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 10px;
-  border: 1px solid #323238;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  background: #121214 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  margin-top: 10px !important;
+  border: 1px solid #323238 !important;
+  position: relative !important;
 }
 
 .camera-box-stream {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 3 / 4; /* Proporção ideal para fotos de corpo/rosto */
-  background: #000000;
-  overflow: hidden;
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 3 / 4 !important;
+  background: #000000 !important;
+  overflow: hidden !important;
+  z-index: 1 !important;
 }
 
 #canvas-visor-live {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
 }
 
-/* Overlay de contagem regressiva */
 .timer-display-overlay {
   position: absolute;
   top: 50%;
@@ -196,95 +197,153 @@ p.sub-txt {
   to { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
 }
 
-/* Painel de Ajustes do Overlay (Abaixo da Câmera) */
+/* Painel de Ajustes Atualizado (Abaixo da Câmera) */
 .painel-inferior-ajustes-cam {
-  width: 100%;
-  background: #1c1c1e;
-  padding: 14px 20px;
-  border-top: 1px solid #2c2c2e;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: opacity 0.2s ease;
+  width: 100% !important;
+  background: #1c1c1e !important;
+  padding: 14px 20px !important;
+  border-top: 1px solid #2c2c2e !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
 }
 
 .painel-inferior-ajustes-cam .linha-controle-slider {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  color: #c4c4cc;
-  font-size: 0.85rem;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 15px !important;
+  color: #c4c4cc !important;
+  font-size: 0.85rem !important;
 }
 
 .painel-inferior-ajustes-cam input[type="range"] {
-  flex: 1;
-  accent-color: #04d361;
-  height: 6px;
-  background: #323238;
-  border-radius: 3px;
-  outline: none;
+  flex: 1 !important;
+  accent-color: #04d361 !important;
+  height: 6px !important;
+  background: #323238 !important;
+  border-radius: 3px !important;
 }
 
 .btn-reset-cam-link {
-  background: none;
-  border: none;
-  color: #8d8d99;
-  font-size: 0.8rem;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 4px 0;
-  text-align: center;
-  width: 100%;
-}
-
-.btn-reset-cam-link:active {
-  color: #ffffff;
-}
-
-/* Barra Inferior de Ações Fotográficas */
-.barra-botoes-fotografica {
-  width: 100%;
-  background: #000000;
-  padding: 20px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 10px;
-}
-
-.btn-circular {
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.1s;
-}
-
-.btn-circular.secondary {
-  width: 48px;
-  height: 48px;
-  background: #202024;
-  color: #ffffff;
-  font-size: 1.2rem;
-}
-
-.btn-circular.gatilho {
-  width: 72px;
-  height: 72px;
-  background: #ffffff;
-  border: 5px solid #04d361;
-  box-shadow: 0 0 0 4px #000000;
-}
-
-.btn-circular:active {
-  transform: scale(0.92);
+  background: none !important;
+  border: none !important;
+  color: #8d8d99 !important;
+  font-size: 0.8rem !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  padding: 4px 0 !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 /* =========================================================================
-   5. MESA DE TRABALHO INTERATIVA (AJUSTE MANUAL PÓS-CAPTURA)
+   CORREÇÃO COMPATIBILIDADE: Força o Painel Antigo para baixo da foto
+   ========================================================================= */
+.controles-live-cam, #controles-overlay-live {
+  position: relative !important;
+  top: unset !important;
+  left: unset !important;
+  transform: unset !important;
+  width: 100% !important;
+  background: #1c1c1e !important;
+  padding: 14px 20px !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  z-index: 2 !important;
+  box-sizing: border-box !important;
+}
+
+.controles-live-cam .linha-controle {
+  display: flex !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.controles-live-cam .btn-blur-control, 
+.controles-live-cam .btn-reset-cam {
+  flex: 1 !important;
+  background: #29292e !important;
+  color: #e1e1e6 !important;
+  border: 1px solid #323238 !important;
+  padding: 10px !important;
+  border-radius: 6px !important;
+  font-size: 0.85rem !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+}
+
+.controles-live-cam .btn-reset-cam {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.controles-live-cam .linha-controle-slider {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  color: #c4c4cc !important;
+  font-size: 0.85rem !important;
+  gap: 15px !important;
+  width: 100% !important;
+}
+
+.controles-live-cam input[type="range"] {
+  flex: 1 !important;
+  accent-color: #04d361 !important;
+}
+
+/* Barra Inferior de Ações Fotográficas */
+.barra-botoes-fotografica, 
+.controles-live-cam + div,
+div:has(> #btn-disparar-foto) {
+  width: 100% !important;
+  background: #000000 !important;
+  padding: 20px !important;
+  display: flex !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.btn-circular {
+  border: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  transition: transform 0.1s !important;
+}
+
+.btn-circular.secondary, .btn-origem[onclick*="Camera"] {
+  width: 48px !important;
+  height: 48px !important;
+  background: #202024 !important;
+  color: #ffffff !important;
+  font-size: 1.2rem !important;
+}
+
+.btn-circular.gatilho, button:contains("CAPTURAR"), button[id*="disparar"] {
+  width: 72px !important;
+  height: 72px !important;
+  background: #ffffff !important;
+  border: 5px solid #04d361 !important;
+  box-shadow: 0 0 0 4px #000000 !important;
+  border-radius: 50% !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+.btn-circular:active {
+  transform: scale(0.92) !important;
+}
+
+/* =========================================================================
+   5. MESA DE TRABALHO INTERATIVA (PÓS-CAPTURA)
    ========================================================================= */
 .canvas-alinhamento {
   position: relative;
@@ -295,7 +354,7 @@ p.sub-txt {
   overflow: hidden;
   margin-top: 15px;
   border: 1px solid #29292e;
-  touch-action: none; /* Crucial para travar o scroll do telemóvel no arrasto */
+  touch-action: none;
 }
 
 .camada-movivel {
@@ -324,11 +383,10 @@ p.sub-txt {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  pointer-events: none; /* Permite que o toque passe para a camada de baixo */
+  pointer-events: none;
   z-index: 2;
 }
 
-/* Painel de Controle da Mesa */
 .controles-edicao {
   background: #121214;
   border: 1px solid #29292e;
@@ -377,7 +435,7 @@ p.sub-txt {
 }
 
 /* =========================================================================
-   6. CONTAINER DO SLIDER VISUAL FINAL (EFEITO REVELAÇÃO)
+   6. CONTAINER DO SLIDER VISUAL FINAL
    ========================================================================= */
 .slider-wrapper {
   position: relative;
@@ -401,7 +459,7 @@ p.sub-txt {
 
 .camada-depois-topo {
   z-index: 2;
-  border-right: 2px solid #ffffff; /* Linha divisória vertical móvel */
+  border-right: 2px solid #ffffff;
 }
 
 .img-render {
@@ -411,7 +469,6 @@ p.sub-txt {
   background-repeat: no-repeat;
 }
 
-/* Barra invisível sobreposta para controlo do arrasto */
 .barra-divisoria {
   position: absolute;
   -webkit-appearance: none;
@@ -438,7 +495,6 @@ p.sub-txt {
   cursor: ew-resize;
 }
 
-/* Etiquetas Visuais (Antes / Depois) */
 .etiqueta-foto {
   position: absolute;
   bottom: 15px;
@@ -454,10 +510,98 @@ p.sub-txt {
   pointer-events: none;
 }
 
-.etiqueta-foto.a {
-  left: 15px;
+.etiqueta-foto.a { left: 15px; }
+.etiqueta-foto.d { right: 15px; }
+
+.container {
+  width: 100%;
+  margin-top: 20px;
 }
 
-.etiqueta-foto.d {
-  right: 15px;
+/* Cria o layout em malha (Grid) adaptável */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Divide em 2 colunas iguais */
+  gap: 16px; /* Espaçamento entre os cartões */
+}
+
+/* Estilização base de cada Cartão (Card) */
+.card {
+  background: #29292e;
+  border: 1px solid #323238;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 110px;
+}
+
+/* Efeito ao passar o rato ou clicar nos cartões */
+.card:hover {
+  background: #323238;
+  border-color: #04d361;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+/* Títulos e textos dentro dos cartões */
+.card h2, .card h3 {
+  color: #ffffff;
+  font-size: 1.15rem;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card p {
+  color: #a8a8b3;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+/* Modificadores de tamanho para criar dinamismo visual */
+.card.large {
+  grid-column: span 2; /* Ocupa as duas colunas inteiras (Destaque) */
+  background: linear-gradient(135deg, #29292e 0%, #1a3d29 100%);
+  border-color: rgba(4, 211, 97, 0.2);
+  min-height: 130px;
+}
+
+.card.large:hover {
+  border-color: #04d361;
+}
+
+.card.tall {
+  grid-row: span 2; /* Ocupa o dobro da altura */
+  justify-content: flex-start;
+}
+
+.card.small {
+  min-height: 90px;
+}
+
+/* Ajuste na Topbar da tela inicial */
+.topbar {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.topbar h1 {
+  font-size: 1.8rem;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.topbar p {
+  color: #04d361;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 4px;
 }
