@@ -5,7 +5,6 @@ body {
   color: #e5e7eb;
 }
 
-/* topo */
 .topbar {
   text-align: center;
   padding: 25px;
@@ -13,14 +12,12 @@ body {
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-/* container */
 .container {
   max-width: 1000px;
   margin: auto;
   padding: 20px;
 }
 
-/* GRID estilo “masonry fake” */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -28,7 +25,6 @@ body {
   gap: 15px;
 }
 
-/* card base */
 .card {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
@@ -44,22 +40,10 @@ body {
   background: rgba(255,255,255,0.08);
 }
 
-/* tamanhos diferentes */
-.large {
-  grid-column: span 2;
-  grid-row: span 2;
-}
+.large { grid-column: span 2; grid-row: span 2; }
+.tall { grid-row: span 2; }
+.small { grid-row: span 1; opacity: 0.85; }
 
-.tall {
-  grid-row: span 2;
-}
-
-.small {
-  grid-row: span 1;
-  opacity: 0.85;
-}
-
-/* view */
 .view {
   margin-top: 20px;
   padding: 20px;
@@ -68,55 +52,101 @@ body {
   border-radius: 16px;
 }
 
-/* === INTERFACE DA MESA DE ALINHAMENTO === */
-.modulo-alinhamento {
-  display: flex;
-  flex-direction: column;
-}
-
-.controles-arquivos {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+/* === INTERFACE POR ETAPAS (PASSOS) === */
+.bloco-etapa {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 20px;
   margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+.bloco-etapa.ativa {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.03);
 }
 
-@media (max-width: 600px) {
-  .controles-arquivos { grid-template-columns: 1fr; }
-}
-
-.campo-foto {
+.topo-etapa {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 12px;
+}
+.topo-etapa h4 { margin: 0; font-size: 1.1rem; }
+
+.badge-etapa {
+  background: #2563eb;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
-.campo-foto label {
+.Sub-txt {
   font-size: 0.85rem;
   color: #9ca3af;
-  font-weight: 600;
+  margin: 5px 0 15px 0;
 }
 
-.campo-foto input[type="file"] {
-  background: rgba(0,0,0,0.2);
-  border: 1px dashed rgba(255,255,255,0.15);
-  padding: 8px;
+.grupo-botoes-origem {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-origem {
+  flex: 1;
+  min-width: 150px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: white;
+  padding: 12px;
   border-radius: 8px;
-  color: #fff;
+  font-weight: 600;
   cursor: pointer;
+  text-align: center;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+.btn-origem:hover { background: rgba(255,255,255,0.15); }
+.label-file { display: block; box-sizing: border-box; }
+
+/* STREAM DE CÂMERA NATIVA DO DISPOSITIVO */
+#container-camera-nativa {
+  background: #000;
+  padding: 15px;
+  border-radius: 16px;
+  margin: 15px auto;
+  max-width: 380px;
+  text-align: center;
+  border: 1px solid #374151;
+}
+.camera-box-stream {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+#video-stream {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
+/* PAINEL EDIÇÃO */
 .controles-edicao {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 15px;
-  background: rgba(255,255,255,0.02);
+  background: rgba(0, 0, 0, 0.2);
   padding: 12px 15px;
   border-radius: 10px;
-  margin-bottom: 15px;
-  border: 1px solid rgba(255,255,255,0.05);
+  margin-top: 15px;
 }
 
 .grupo-botoes button {
@@ -127,44 +157,25 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: 0.2s;
 }
+.grupo-botoes button:hover { background: #2563eb; }
+.grupo-slider-opacidade { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #9ca3af; }
 
-.grupo-botoes button:hover {
-  background: #2563eb;
-  border-color: #2563eb;
-}
-
-.grupo-slider-opacidade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-/* CAIXA CONTAINER VERTICAL RETRATO (Proporção 3:4) */
+/* MESA DE EDIÇÃO INTERATIVA (3:4 Retrato) */
 .canvas-alinhamento {
   position: relative;
   width: 100%;
   max-width: 380px;
   aspect-ratio: 3 / 4;
-  margin: 10px auto;
+  margin: 20px auto;
   background: #050a14;
   border-radius: 16px;
   overflow: hidden;
-  border: 2px solid rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.15);
   cursor: move;
 }
 
-.img-base-alinhamento {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-
+/* O Depois fica solto no fundo controlado por transform */
 .camada-movivel {
   position: absolute;
   top: 0;
@@ -172,16 +183,26 @@ body {
   width: 100%;
   height: 100%;
   transform-origin: center center;
-  pointer-events: none;
 }
+.camada-movivel img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-.camada-movivel img {
+/* O Antes fica por cima travado servindo de máscara de transparência */
+.img-base-alinhamento-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none; /* deixa o arrasto passar para o visor pai */
+  z-index: 10;
 }
 
 .btn-principal {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  margin: 15px auto;
   background: #10b981;
   color: white;
   border: none;
@@ -190,17 +211,11 @@ body {
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  margin-top: 15px;
-  transition: background 0.2s, opacity 0.2s;
 }
+.btn-principal.verde { background: #ef4444; }
+.btn-link { background: transparent; border: none; color: #9ca3af; cursor: pointer; text-decoration: underline; font-size: 0.85rem; display: block; margin: 10px auto; }
 
-.btn-principal:disabled {
-  background: #374151;
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* === REVELAÇÃO CIRÚRGICA (FOTOS PARADAS) === */
+/* REVELAÇÃO FINAL */
 .hidden { display: none !important; }
 
 .slider-wrapper {
@@ -215,27 +230,10 @@ body {
   border: 2px solid rgba(255,255,255,0.15);
 }
 
-.slider-camada {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  overflow: hidden;
-}
+.slider-camada { position: absolute; top: 0; left: 0; height: 100%; overflow: hidden; }
+.camada-antes-fundo { width: 100%; z-index: 1; }
+.camada-depois-topo { z-index: 2; border-right: 3px solid #2563eb; }
 
-/* O "Antes" preenche o fundo de forma estática */
-.camada-antes-fundo {
-  width: 100%;
-  z-index: 1;
-}
-
-/* O "Depois" fica no topo com largura variável (janela de corte) */
-.camada-depois-topo {
-  z-index: 2;
-  border-right: 3px solid #2563eb;
-}
-
-/* Imagens com largura dinâmica gerada via JS para impedir compressão */
 .slider-wrapper .img-render {
   height: 100%;
   background-size: cover;
@@ -256,7 +254,6 @@ body {
   z-index: 3;
   cursor: ew-resize;
 }
-
 .barra-divisoria::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 38px;
@@ -265,7 +262,6 @@ body {
   border: 3px solid #fff;
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(0,0,0,0.6);
-  cursor: pointer;
 }
 
 .etiqueta-foto {
@@ -278,7 +274,6 @@ body {
   font-weight: bold;
   z-index: 4;
   border: 1px solid rgba(255,255,255,0.1);
-  pointer-events: none;
 }
 .etiqueta-foto.a { left: 15px; }
 .etiqueta-foto.d { right: 15px; }
