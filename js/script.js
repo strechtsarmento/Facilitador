@@ -1,20 +1,24 @@
-// Variáveis de estado global do módulo Antes e Depois
+// =========================================================================
+// VARIÁVEIS DE ESTADO GLOBAL (MÓDULO ANTES E DEPOIS)
+// =========================================================================
 let transformacoes = { zoom: 1, x: 0, y: 0 };
 let transformacoesAntesOverlay = { zoom: 1 }; 
 let arrastando = false;
 let inicioX = 0, inicioY = 0;
 
 let streamLocal = null;
-let modoCamera = "environment"; 
+let modoCamera = "environment"; // 'environment' (traseira) ou 'user' (frontal)
 let alvoAtualCamera = ""; 
-let idAnimacaoCamera = null; // Controla o loop de desenho do overlay no telemóvel
+let idAnimacaoCamera = null; // Controla o loop de desenho do visor (Canvas)
 
 let fotoAntesData = "";
 let fotoDepoisData = "";
-let imgAntesObjeto = null; // Guarda o objeto de imagem para o Canvas Live
+let imgAntesObjeto = null; // Instância da imagem na memória para o Canvas Live
 let opacidadeLiveGlobal = 0.5;
 
-// Função principal para alternar as telas cheias
+// =========================================================================
+// NAVEGAÇÃO ENTRE TELAS / MÓDULOS
+// =========================================================================
 function abrir(tela) {
   const telaInicial = document.getElementById("tela-inicial");
   const telaModulo = document.getElementById("tela-modulo");
@@ -24,7 +28,7 @@ function abrir(tela) {
   fecharCamera();
 
   const titulos = {
-    antesDepois: "📸 Antes e Depois Cirúrgico",
+    antesDepois: "📸 Alinhamento e Seleção Visual",
     galeria: "🖼️ Galeria de Fotos",
     upload: "⬆️ Upload de Arquivos",
     config: "⚙️ Configurações",
@@ -153,6 +157,9 @@ function voltarParaMenu() {
   document.getElementById("tela-modulo").classList.add("hidden");
 }
 
+// =========================================================================
+// GESTÃO E CARREGAMENTO DE ARQUIVOS LOCAL (UPLOAD)
+// =========================================================================
 function manipularArquivo(input, alvo) {
   const file = input.files[0];
   if (file) {
@@ -172,7 +179,6 @@ function receberImagemAntes(dataUrl) {
   fotoAntesData = dataUrl;
   document.getElementById("preview-antes").src = dataUrl;
   
-  // Prepara a instância da imagem em memória para pintura no canvas live
   imgAntesObjeto = new Image();
   imgAntesObjeto.src = dataUrl;
 
@@ -194,6 +200,9 @@ function receberImagemDepois(dataUrl) {
   configurarArrastoMesa();
 }
 
+// =========================================================================
+// CONTROLO DE HARDWARE DA CÂMERA E FLUXO LIVE VIEW
+// =========================================================================
 function abrirPainelCamera(alvo) {
   alvoAtualCamera = alvo;
   document.getElementById("container-camera-nativa").classList.remove("hidden");
@@ -242,11 +251,10 @@ async function inicializarStreamCamera() {
     video.onloadedmetadata = () => {
       canvasVisor.width = video.videoWidth || 640;
       canvasVisor.height = video.videoHeight || 480;
-      // Inicia o render em loop contínuo unificado
       loopRenderVisor(video, canvasVisor, ctxVisor);
     };
 
-    video.play().catch(e => console.log("Play pendente:", e));
+    video.play().catch(e => console.log("Aguardando play ativo:", e));
 
     const btnDisparar = document.getElementById("btn-disparar-foto");
     const novoBtn = btnDisparar.cloneNode(true);
@@ -258,7 +266,6 @@ async function inicializarStreamCamera() {
       canvasSnapshot.height = canvasVisor.height;
       const ctxSnap = canvasSnapshot.getContext("2d");
       
-      // Captura puramente o vídeo real (sem misturar o fantasma na foto final)
       if (modoCamera === "user") {
         ctxSnap.translate(canvasSnapshot.width, 0);
         ctxSnap.scale(-1, 1);
@@ -276,18 +283,18 @@ async function inicializarStreamCamera() {
     });
 
   } catch (err) {
-    alert("Câmera bloqueada. Verifique suas permissões de privacidade ou garanta o uso de HTTPS.");
+    alert("Acesso à câmera negado. Ative as permissões ou use uma ligação segura HTTPS.");
     document.getElementById("container-camera-nativa").classList.add("hidden");
   }
 }
 
-// Renderizador Unificado: Combina câmera e imagem fantasma eliminando invisibilidade em celulares
+// MOTOR PROPORCIONAL UNIFICADO (VÍDEO + FANTASMA EM COVRE CENTRALIZADO)
 function loopRenderVisor(video, canvas, ctx) {
   if (!streamLocal) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // 1. Desenha a Câmera Viva ao fundo cobrindo o canvas
+  // 1. Desenha o feed da câmera viva ao fundo
   ctx.save();
   if (modoCamera === "user") {
     ctx.translate(canvas.width, 0);
@@ -296,36 +303,32 @@ function loopRenderVisor(video, canvas, ctx) {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.restore();
 
-  // 2. Mescla o Overlay do 'Antes' de forma perfeitamente centralizada e proporcional (Cover)
+  // 2. Desenha a foto fantasma com object-fit cover centralizado matemático
   if (alvoAtualCamera === 'depois' && imgAntesObjeto && imgAntesObjeto.complete) {
     ctx.save();
     ctx.globalAlpha = opacidadeLiveGlobal;
 
-    // Lógica de "Object-Fit: Cover" matemática para o Canvas
     let imgLargura = imgAntesObjeto.width;
     let imgAltura = imgAntesObjeto.height;
     let canvasLargura = canvas.width;
     let canvasAltura = canvas.height;
 
     let escalaProporcional = Math.max(canvasLargura / imgLargura, canvasAltura / imgAltura);
-    
-    // Multiplica pelo zoom controlado pelos botões do usuário
     let zoomFinal = escalaProporcional * transformacoesAntesOverlay.zoom;
 
     let novaLargura = imgLargura * zoomFinal;
     let novaAltura = imgAltura * zoomFinal;
 
-    // Centraliza o desenho da imagem com base no meio do visor
     let xCentralizado = (canvasLargura - novaLargura) / 2;
     let yCentralizado = (canvasAltura - novaAltura) / 2;
 
-    // Aplica o desenho final
     ctx.drawImage(imgAntesObjeto, xCentralizado, yCentralizado, novaLargura, novaAltura);
     ctx.restore();
   }
 
   idAnimacaoCamera = requestAnimationFrame(() => loopRenderVisor(video, canvas, ctx));
 }
+
 function alternarLenteCamera() {
   modoCamera = (modoCamera === "environment") ? "user" : "environment";
   inicializarStreamCamera();
@@ -359,6 +362,9 @@ function fecharCamera() {
   if (boxCam) boxCam.classList.add("hidden");
 }
 
+// =========================================================================
+// CONFIGURAÇÃO DOS TOQUES MÓVEIS (GALAXY/IPHONE ARRASTAR MESA)
+// =========================================================================
 function configurarArrastoMesa() {
   const areaArrastar = document.getElementById("area-arrastar");
 
@@ -410,6 +416,9 @@ function atualizarEstilosCamadaDepois() {
   }
 }
 
+// =========================================================================
+// PROCESSAMENTO DO SLIDER DE REVELAÇÃO FINAL
+// =========================================================================
 function consolidarSlider() {
   const containerSlider = document.getElementById("container-slider-final");
   const wrapper = document.getElementById("slider-wrapper-box");
