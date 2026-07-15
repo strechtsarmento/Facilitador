@@ -1,5 +1,5 @@
 /* =========================================================================
-   1. RESET GLOBAL E CONFIGURAÇÕES BASE (Estilo Dark Moderno)
+   1. RESET GLOBAL E CONFIGURAÇÕES BASE (Premium Dark)
    ========================================================================= */
 * {
   margin: 0;
@@ -11,352 +11,332 @@
 }
 
 body {
-  background-color: #121214;
-  color: #e1e1e6;
-  padding: 20px;
+  background-color: #0b0b0c;
+  color: #f5f5f7;
+  padding: 16px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
 }
 
-.hidden {
-  display: none !important;
-}
+.hidden { display: none !important; }
 
 /* =========================================================================
    2. ESTRUTURA DOS MÓDULOS E TRANSIÇÃO DE TELAS
    ========================================================================= */
 #tela-inicial, #tela-modulo {
   width: 100%;
-  max-width: 480px;
-  background: #202024;
-  border-radius: 12px;
+  max-width: 460px;
+  background: #121214;
+  border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-h3 {
-  color: #ffffff;
-  font-size: 1.4rem;
-  margin-bottom: 8px;
-}
+.topbar { text-align: left; margin-bottom: 24px; padding-left: 4px; }
+.topbar h1 { font-size: 2.2rem; color: #ffffff; font-weight: 800; letter-spacing: -1px; }
+.topbar p { color: #8e8e93; font-size: 0.95rem; margin-top: 4px; }
 
-h4 {
-  color: #ffffff;
-  font-size: 1.1rem;
-}
-
-p.sub-txt {
-  color: #a8a8b3;
-  font-size: 0.9rem;
-  line-height: 1.4;
+.topbar-modulo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 16px;
+}
+
+.topbar-modulo h2 { font-size: 1.3rem; font-weight: 700; color: #ffffff; }
+
+.btn-voltar {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f5f7;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.2s;
+}
+.btn-voltar:active { background: rgba(255, 255, 255, 0.15); }
+
+/* =========================================================================
+   3. DASHBOARD (GRID & CARDS)
+   ========================================================================= */
+.container { width: 100%; }
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+.card {
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 120px;
+}
+.card:active { transform: scale(0.96); background: #2c2c2e; }
+
+.card-icon { font-size: 1.5rem; margin-bottom: 12px; }
+.card h2, .card h3 { color: #ffffff; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+.card p { color: #8e8e93; font-size: 0.8rem; line-height: 1.3; }
+
+.card.large {
+  grid-column: span 2;
+  background: linear-gradient(145deg, #1c1c1e 0%, #0c2e1b 100%);
+  border-color: rgba(4, 211, 97, 0.15);
+  min-height: 140px;
+}
+.card.large h2 { color: #04d361; }
+.card.small { min-height: 120px; }
+.card.tall { grid-row: span 2; min-height: 254px; justify-content: space-between; }
+
+/* Barra de Progresso do Dashboard */
+.progress-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: #4ea8de;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+/* Formulário de Dados */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+.form-group label { color: #aeaeb2; font-size: 0.85rem; font-weight: 600; }
+.form-control {
+  background: #1c1c1e;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+}
+.form-control:focus { outline: 1px solid #4ea8de; border-color: #4ea8de; }
+.imc-display {
+  background: rgba(78, 168, 222, 0.1);
+  color: #4ea8de;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: 10px;
+  border: 1px dashed rgba(78, 168, 222, 0.3);
 }
 
 /* =========================================================================
-   3. BOTÕES E COMPONENTES DE INTERFACE COMUNS
+   4. ETAPAS E COMPONENTES DE INTERFACE
    ========================================================================= */
+.bloco-etapa {
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.topo-etapa { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.badge-etapa {
+  background: rgba(4, 211, 97, 0.15);
+  color: #04d361;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+h4 { color: #ffffff; font-size: 1.05rem; }
+p.sub-txt { color: #8e8e93; font-size: 0.85rem; line-height: 1.4; margin-bottom: 15px; }
+
+.grupo-botoes-origem { display: flex; gap: 12px; }
+.btn-origem {
+  flex: 1;
+  background: #2c2c2e;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.btn-origem:active { background: #3a3a3c; }
+.label-file { cursor: pointer; }
+
 .btn-principal {
   width: 100%;
   background: #04d361;
   color: #000000;
   border: none;
-  border-radius: 8px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 16px;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: all 0.2s;
   margin-top: 15px;
 }
-
-.btn-principal:active {
-  background: #00b34d;
-  transform: scale(0.98);
-}
+.btn-principal:active { transform: scale(0.98); background: #00b34d; }
 
 .btn-link {
   background: none;
   border: none;
-  color: #4ea8de;
-  text-decoration: underline;
+  color: #04d361;
+  font-weight: 600;
   cursor: pointer;
   font-size: 0.95rem;
   display: block;
-  margin: 0 auto;
-}
-
-/* Fluxo de Etapas */
-.bloco-etapa {
-  background: #121214;
-  border: 1px solid #29292e;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.topo-etapa {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.badge-etapa {
-  background: #29292e;
-  color: #04d361;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 4px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.grupo-botoes-origem {
-  display: flex;
-  gap: 12px;
-}
-
-.btn-origem {
-  flex: 1;
-  background: #202024;
-  color: #e1e1e6;
-  border: 1px solid #323238;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.btn-origem:active {
-  background: #29292e;
-}
-
-.label-file {
-  cursor: pointer;
+  margin: 15px auto 0 auto;
 }
 
 /* =========================================================================
-   4. INTERFACE DA CÂMERA INTEGRADA E LIMPA (SEM OBSTRUÇÃO)
+   5. CÂMERA NATIVA & OVERLAY
    ========================================================================= */
 #container-camera-nativa {
-  width: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  background: #121214 !important;
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  margin-top: 10px !important;
-  border: 1px solid #323238 !important;
-  position: relative !important;
+  width: 100%;
+  background: #000000;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
-
 .camera-box-stream {
-  position: relative !important;
-  width: 100% !important;
-  aspect-ratio: 3 / 4 !important;
-  background: #000000 !important;
-  overflow: hidden !important;
-  z-index: 1 !important;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #000000;
+  overflow: hidden;
+  z-index: 1;
 }
-
 #canvas-visor-live {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  display: block !important;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
-
 .timer-display-overlay {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 5.5rem;
-  font-weight: 900;
+  font-size: 6rem;
+  font-weight: 800;
   color: #ffffff;
-  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   z-index: 10;
 }
-
-.animar-pulso {
-  animation: pulsoTimer 1s infinite alternate;
-}
-
+.animar-pulso { animation: pulsoTimer 1s infinite alternate; }
 @keyframes pulsoTimer {
-  from { transform: translate(-50%, -50%) scale(0.85); opacity: 0.6; }
+  from { transform: translate(-50%, -50%) scale(0.85); opacity: 0.5; }
   to { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
 }
 
-/* Painel de Ajustes Atualizado (Abaixo da Câmera) */
 .painel-inferior-ajustes-cam {
-  width: 100% !important;
-  background: #1c1c1e !important;
-  padding: 14px 20px !important;
-  border-top: 1px solid #2c2c2e !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
+  width: 100%;
+  background: #1c1c1e;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-
-.painel-inferior-ajustes-cam .linha-controle-slider {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 15px !important;
-  color: #c4c4cc !important;
-  font-size: 0.85rem !important;
+.linha-controle-slider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  color: #aeaeb2;
+  font-size: 0.85rem;
 }
-
-.painel-inferior-ajustes-cam input[type="range"] {
-  flex: 1 !important;
-  accent-color: #04d361 !important;
-  height: 6px !important;
-  background: #323238 !important;
-  border-radius: 3px !important;
+input[type="range"] {
+  flex: 1;
+  accent-color: #04d361;
+  height: 6px;
+  background: #2c2c2e;
+  border-radius: 3px;
 }
-
 .btn-reset-cam-link {
-  background: none !important;
-  border: none !important;
-  color: #8d8d99 !important;
-  font-size: 0.8rem !important;
-  text-decoration: underline !important;
-  cursor: pointer !important;
-  padding: 4px 0 !important;
-  text-align: center !important;
-  width: 100% !important;
+  background: none;
+  border: none;
+  color: #8e8e93;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-/* =========================================================================
-   CORREÇÃO COMPATIBILIDADE: Força o Painel Antigo para baixo da foto
-   ========================================================================= */
-.controles-live-cam, #controles-overlay-live {
-  position: relative !important;
-  top: unset !important;
-  left: unset !important;
-  transform: unset !important;
-  width: 100% !important;
-  background: #1c1c1e !important;
-  padding: 14px 20px !important;
-  margin: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-  z-index: 2 !important;
-  box-sizing: border-box !important;
+.barra-botoes-fotografica {
+  width: 100%;
+  background: #000000;
+  padding: 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 5;
 }
-
-.controles-live-cam .linha-controle {
-  display: flex !important;
-  gap: 8px !important;
-  width: 100% !important;
-}
-
-.controles-live-cam .btn-blur-control, 
-.controles-live-cam .btn-reset-cam {
-  flex: 1 !important;
-  background: #29292e !important;
-  color: #e1e1e6 !important;
-  border: 1px solid #323238 !important;
-  padding: 10px !important;
-  border-radius: 6px !important;
-  font-size: 0.85rem !important;
-  font-weight: bold !important;
-  cursor: pointer !important;
-}
-
-.controles-live-cam .btn-reset-cam {
-  background: #ef4444 !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-
-.controles-live-cam .linha-controle-slider {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  color: #c4c4cc !important;
-  font-size: 0.85rem !important;
-  gap: 15px !important;
-  width: 100% !important;
-}
-
-.controles-live-cam input[type="range"] {
-  flex: 1 !important;
-  accent-color: #04d361 !important;
-}
-
-/* Barra Inferior de Ações Fotográficas */
-.barra-botoes-fotografica, 
-.controles-live-cam + div,
-div:has(> #btn-disparar-foto) {
-  width: 100% !important;
-  background: #000000 !important;
-  padding: 20px !important;
-  display: flex !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
 .btn-circular {
-  border: none !important;
-  border-radius: 50% !important;
-  cursor: pointer !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  transition: transform 0.1s !important;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-
-.btn-circular.secondary, .btn-origem[onclick*="Camera"] {
-  width: 48px !important;
-  height: 48px !important;
-  background: #202024 !important;
-  color: #ffffff !important;
-  font-size: 1.2rem !important;
+.btn-circular.secondary {
+  width: 48px;
+  height: 48px;
+  background: #1c1c1e;
+  color: #ffffff;
+  font-size: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
-
-.btn-circular.gatilho, button:contains("CAPTURAR"), button[id*="disparar"] {
-  width: 72px !important;
-  height: 72px !important;
-  background: #ffffff !important;
-  border: 5px solid #04d361 !important;
-  box-shadow: 0 0 0 4px #000000 !important;
-  border-radius: 50% !important;
-  color: transparent !important;
-  font-size: 0 !important;
+.btn-circular.gatilho {
+  width: 76px;
+  height: 76px;
+  background: #ffffff;
+  border: 5px solid #04d361;
+  box-shadow: 0 0 0 4px #000000;
 }
-
-.btn-circular:active {
-  transform: scale(0.92) !important;
-}
+.btn-circular:active { transform: scale(0.92); }
 
 /* =========================================================================
-   5. MESA DE TRABALHO INTERATIVA (PÓS-CAPTURA)
+   6. MESA DE ALINHAMENTO INTERATIVA E SLIDER INFERIOR
    ========================================================================= */
 .canvas-alinhamento {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
   background: #000000;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   margin-top: 15px;
-  border: 1px solid #29292e;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   touch-action: none;
 }
-
 .camada-movivel {
   position: absolute;
   top: 0;
@@ -364,18 +344,13 @@ div:has(> #btn-disparar-foto) {
   width: 100%;
   height: 100%;
   transform-origin: center center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
-
 .camada-movivel img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   pointer-events: none;
 }
-
 .img-base-alinhamento-overlay {
   position: absolute;
   top: 0;
@@ -388,64 +363,49 @@ div:has(> #btn-disparar-foto) {
 }
 
 .controles-edicao {
-  background: #121214;
-  border: 1px solid #29292e;
-  border-radius: 6px;
-  padding: 12px;
-  margin-top: 10px;
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-.grupo-botoes {
-  display: flex;
-  gap: 8px;
-}
-
+.grupo-botoes { display: flex; gap: 8px; }
 .btn-mini {
   flex: 1;
-  background: #29292e;
-  color: #e1e1e6;
+  background: #2c2c2e;
+  color: #ffffff;
   border: none;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 10px;
+  border-radius: 8px;
   font-size: 0.8rem;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
 }
-
-.btn-mini.btn-reset {
-  background: #ef4444;
-  color: #ffffff;
-}
-
+.btn-mini.btn-reset { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
 .grupo-slider-opacidade {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #a8a8b3;
+  color: #aeaeb2;
   gap: 10px;
 }
 
-.grupo-slider-opacidade input {
-  flex: 1;
-  accent-color: #04d361;
-}
-
 /* =========================================================================
-   6. CONTAINER DO SLIDER VISUAL FINAL
+   7. SLIDER REVELAÇÃO COM BOTÃO INFERIOR
    ========================================================================= */
 .slider-wrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
   background: #121214;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   margin-top: 15px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.7);
 }
 
 .slider-camada {
@@ -459,149 +419,99 @@ div:has(> #btn-disparar-foto) {
 
 .camada-depois-topo {
   z-index: 2;
-  border-right: 2px solid #ffffff;
 }
 
 .img-render {
   height: 100%;
   background-size: cover;
   background-position: center center;
-  background-repeat: no-repeat;
 }
 
+/* Linha visual fina cortando a imagem */
+.linha-divisoria-visual {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3px;
+  height: 100%;
+  background: #ffffff;
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  transform: translateX(-50%);
+}
+
+/* O input range posicionado na parte inferior para arrasto confortável */
 .barra-divisoria {
   position: absolute;
   -webkit-appearance: none;
   appearance: none;
-  top: 0;
+  bottom: 10px;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 44px;
   background: transparent;
   outline: none;
   z-index: 4;
-  cursor: ew-resize;
   margin: 0;
 }
 
 .barra-divisoria::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  background: #04d361;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   cursor: ew-resize;
 }
 
 .etiqueta-foto {
   position: absolute;
-  bottom: 15px;
-  background: rgba(0, 0, 0, 0.65);
+  top: 16px; /* Movido para o topo para não chocar com o botão inferior */
+  background: rgba(0, 0, 0, 0.7);
   color: #ffffff;
   font-size: 0.75rem;
-  font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  z-index: 3;
-  pointer-events: none;
-}
-
-.etiqueta-foto.a { left: 15px; }
-.etiqueta-foto.d { right: 15px; }
-
-.container {
-  width: 100%;
-  margin-top: 20px;
-}
-
-/* Cria o layout em malha (Grid) adaptável */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Divide em 2 colunas iguais */
-  gap: 16px; /* Espaçamento entre os cartões */
-}
-
-/* Estilização base de cada Cartão (Card) */
-.card {
-  background: #29292e;
-  border: 1px solid #323238;
+  font-weight: 700;
+  padding: 6px 12px;
   border-radius: 8px;
-  padding: 20px;
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 110px;
+  text-transform: uppercase;
+  z-index: 3;
 }
+.etiqueta-foto.a { left: 16px; }
+.etiqueta-foto.d { right: 16px; }
 
-/* Efeito ao passar o rato ou clicar nos cartões */
-.card:hover {
-  background: #323238;
-  border-color: #04d361;
+/* Galeria */
+.card-galeria-item {
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 12px;
 }
-
-.card:active {
-  transform: scale(0.98);
-}
-
-/* Títulos e textos dentro dos cartões */
-.card h2, .card h3 {
-  color: #ffffff;
-  font-size: 1.15rem;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
+.mini-grid-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
 }
-
-.card p {
-  color: #a8a8b3;
-  font-size: 0.85rem;
-  line-height: 1.3;
+.mini-grid-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-
-/* Modificadores de tamanho para criar dinamismo visual */
-.card.large {
-  grid-column: span 2; /* Ocupa as duas colunas inteiras (Destaque) */
-  background: linear-gradient(135deg, #29292e 0%, #1a3d29 100%);
-  border-color: rgba(4, 211, 97, 0.2);
-  min-height: 130px;
+.mini-grid-preview img.full {
+  grid-column: span 2;
 }
-
-.card.large:hover {
-  border-color: #04d361;
-}
-
-.card.tall {
-  grid-row: span 2; /* Ocupa o dobro da altura */
-  justify-content: flex-start;
-}
-
-.card.small {
-  min-height: 90px;
-}
-
-/* Ajuste na Topbar da tela inicial */
-.topbar {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.topbar h1 {
-  font-size: 1.8rem;
-  color: #ffffff;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.topbar p {
-  color: #04d361;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-top: 4px;
+.footer-item-galeria {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #8e8e93;
 }
